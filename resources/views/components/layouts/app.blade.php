@@ -36,12 +36,24 @@
     <x-ui.swal />
 
     <!-- Top Navigation Bar -->
-    <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/80 sticky top-0 z-40 shadow-sm transition-colors duration-200">
+    <nav x-data="{ mobileMenuOpen: false }" class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700/80 sticky top-0 z-40 shadow-sm transition-colors duration-200">
         <div class="w-full max-w-full px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 gap-4">
+            <div class="flex items-center justify-between h-16 gap-3 sm:gap-4">
 
-                <!-- Left Brand & Role-Based Navigation Links -->
-                <div class="flex items-center gap-4 lg:gap-6 min-w-0">
+                <!-- Left Brand & Mobile Hamburger Toggle -->
+                <div class="flex items-center gap-3 lg:gap-6 min-w-0">
+                    <!-- Mobile Hamburger Toggle Button (Mobile & Tablet) -->
+                    <button 
+                        @click="mobileMenuOpen = !mobileMenuOpen" 
+                        class="lg:hidden p-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
+                        title="Buka Menu Navigasi"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" style="display: none;"></path>
+                        </svg>
+                    </button>
+
                     <a href="{{ route('pos') }}" class="flex items-center gap-2 font-black text-xl tracking-tight text-slate-900 dark:text-white shrink-0">
                         <span class="bg-amber-500 text-slate-950 px-2.5 py-1 rounded-xl text-sm font-black shadow-sm">DS</span>
                         <span class="hidden sm:inline">Toko Duta Sae</span>
@@ -144,6 +156,62 @@
                     @endauth
                 </div>
 
+            </div>
+        </div>
+
+        <!-- Mobile & Tablet Collapsible Drawer Navigation Menu -->
+        <div 
+            x-show="mobileMenuOpen" 
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2"
+            class="lg:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 pt-3 pb-6 space-y-3 shadow-xl"
+            style="display: none;"
+        >
+            <div class="space-y-1">
+                <a href="{{ route('pos') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('pos') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                    🛒 Kasir POS
+                </a>
+                <a href="{{ route('receivables.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('receivables.*') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                    💳 Buku Piutang Pelanggan
+                </a>
+
+                @if (Auth::user()?->isAdmin())
+                    <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('dashboard') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        📊 Dashboard Analitik
+                    </a>
+                    <a href="{{ route('purchases.create') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('purchases.create') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        📥 Barang Masuk (Supplier)
+                    </a>
+                    <a href="{{ route('reports.sales') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('reports.sales') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        📈 Laporan Omzet
+                    </a>
+                    <a href="{{ route('users.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('users.index') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        👥 Manajemen Pengguna
+                    </a>
+
+                    <!-- Master Data Accordion / Submenu -->
+                    <div class="pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div class="px-4 py-1 text-xs font-black uppercase tracking-wider text-slate-400">Data Master</div>
+                        <div class="grid grid-cols-2 gap-1.5 mt-1">
+                            <a href="{{ route('products.index') }}" class="block px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 hover:text-amber-500">
+                                📦 Master Barang
+                            </a>
+                            <a href="{{ route('units.index') }}" class="block px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 hover:text-amber-500">
+                                📐 Master Satuan
+                            </a>
+                            <a href="{{ route('suppliers.index') }}" class="block px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 hover:text-amber-500">
+                                🏢 Master Supplier
+                            </a>
+                            <a href="{{ route('customers.index') }}" class="block px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900/60 hover:text-amber-500">
+                                👤 Master Pelanggan
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </nav>
