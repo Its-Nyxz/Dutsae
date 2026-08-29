@@ -135,13 +135,59 @@
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
+                        <!-- Alpine Custom Select: Metode Bayar Piutang -->
+                        <div class="relative" x-data="{ openPayMethod: false }" @click.outside="openPayMethod = false" @keydown.escape.window="openPayMethod = false">
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Metode Bayar</label>
-                            <select wire:model="paymentMethod" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm outline-none">
-                                <option value="cash">💵 Tunai (Cash)</option>
-                                <option value="bank_transfer">🏦 Transfer Bank</option>
-                                <option value="qris">📱 QRIS</option>
-                            </select>
+                            <button 
+                                type="button" 
+                                @click="openPayMethod = !openPayMethod" 
+                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl p-3 text-sm flex items-center justify-between cursor-pointer focus:border-amber-500 transition shadow-sm outline-none"
+                            >
+                                <span>
+                                    @if ($paymentMethod === 'bank_transfer')
+                                        🏦 Transfer Bank
+                                    @elseif ($paymentMethod === 'qris')
+                                        📱 QRIS
+                                    @else
+                                        💵 Tunai (Cash)
+                                    @endif
+                                </span>
+                                <span class="text-xs text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': openPayMethod }">▼</span>
+                            </button>
+
+                            <div 
+                                x-show="openPayMethod" 
+                                x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                class="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-1 divide-y divide-slate-100 dark:divide-slate-700/40"
+                                style="display: none;"
+                            >
+                                <div 
+                                    @click="$wire.set('paymentMethod', 'cash'); openPayMethod = false"
+                                    class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $paymentMethod === 'cash' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                                >
+                                    <span>💵 Tunai (Cash)</span>
+                                    @if ($paymentMethod === 'cash') <span class="text-amber-500">✓</span> @endif
+                                </div>
+                                <div 
+                                    @click="$wire.set('paymentMethod', 'bank_transfer'); openPayMethod = false"
+                                    class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $paymentMethod === 'bank_transfer' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                                >
+                                    <span>🏦 Transfer Bank</span>
+                                    @if ($paymentMethod === 'bank_transfer') <span class="text-amber-500">✓</span> @endif
+                                </div>
+                                <div 
+                                    @click="$wire.set('paymentMethod', 'qris'); openPayMethod = false"
+                                    class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $paymentMethod === 'qris' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                                >
+                                    <span>📱 QRIS</span>
+                                    @if ($paymentMethod === 'qris') <span class="text-amber-500">✓</span> @endif
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">No. Ref (Opsional)</label>

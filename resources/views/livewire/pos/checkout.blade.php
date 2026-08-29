@@ -591,12 +591,45 @@
                             </div>
                         @endif
 
-                        <select wire:model="quickLocationId" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sky-600 dark:text-sky-400 font-bold rounded-xl p-2.5 sm:p-3 text-sm sm:text-base outline-none cursor-pointer">
-                            <option value="" class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">-- Tanpa Lokasi / Umum --</option>
-                            @foreach ($locations as $loc)
-                                <option value="{{ $loc->id }}" class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">📍 {{ $loc->name }}</option>
-                            @endforeach
-                        </select>
+                        <!-- Custom Alpine Dropdown Quick Location -->
+                        <div class="relative" x-data="{ openQuickLoc: false }" :class="{ 'z-[999]': openQuickLoc }">
+                            <button 
+                                type="button" 
+                                @click="openQuickLoc = !openQuickLoc" 
+                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 sm:p-3 text-sm sm:text-base font-semibold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
+                            >
+                                @php $selectedLoc = $locations->firstWhere('id', $quickLocationId); @endphp
+                                <span>{{ $selectedLoc?->name ? '📍 ' . $selectedLoc->name : '-- Tanpa Lokasi / Umum --' }}</span>
+                                <span class="text-xs text-slate-400 ml-2">▼</span>
+                            </button>
+
+                            <div 
+                                x-show="openQuickLoc" 
+                                @click.outside="openQuickLoc = false" 
+                                x-transition
+                                class="absolute z-[999] left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50"
+                                style="display: none;"
+                            >
+                                <div 
+                                    @click="$wire.set('quickLocationId', null); openQuickLoc = false"
+                                    class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ empty($quickLocationId) ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                >
+                                    <span>-- Tanpa Lokasi / Umum --</span>
+                                    @if (empty($quickLocationId)) <span class="text-amber-500 text-xs font-bold">✓</span> @endif
+                                </div>
+                                @foreach ($locations as $loc)
+                                    <div 
+                                        @click="$wire.set('quickLocationId', {{ $loc->id }}); openQuickLoc = false"
+                                        class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ $quickLocationId == $loc->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                    >
+                                        <span>📍 {{ $loc->name }}</span>
+                                        @if ($quickLocationId == $loc->id)
+                                            <span class="text-amber-500 text-xs font-bold">✓</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Satuan Dasar & Inline Unit Add Button -->

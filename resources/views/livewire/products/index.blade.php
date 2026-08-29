@@ -155,12 +155,45 @@
                             </div>
                         @endif
 
-                        <select wire:model="locationId" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sky-600 dark:text-sky-400 font-bold rounded-xl p-3.5 text-base outline-none cursor-pointer">
-                            <option value="">-- Tanpa Lokasi / Umum --</option>
-                            @foreach ($locations as $loc)
-                                <option value="{{ $loc->id }}">📍 {{ $loc->name }}</option>
-                            @endforeach
-                        </select>
+                        <!-- Custom Alpine Dropdown Location in Create Modal -->
+                        <div class="relative" x-data="{ openCreateLoc: false }" :class="{ 'z-[999]': openCreateLoc }">
+                            <button 
+                                type="button" 
+                                @click="openCreateLoc = !openCreateLoc" 
+                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3.5 text-base font-semibold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
+                            >
+                                @php $selectedLoc = $locations->firstWhere('id', $locationId); @endphp
+                                <span>{{ $selectedLoc?->name ? '📍 ' . $selectedLoc->name : '-- Tanpa Lokasi / Umum --' }}</span>
+                                <span class="text-xs text-slate-400 ml-2">▼</span>
+                            </button>
+
+                            <div 
+                                x-show="openCreateLoc" 
+                                @click.outside="openCreateLoc = false" 
+                                x-transition
+                                class="absolute z-[999] left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50"
+                                style="display: none;"
+                            >
+                                <div 
+                                    @click="$wire.set('locationId', null); openCreateLoc = false"
+                                    class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ empty($locationId) ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                >
+                                    <span>-- Tanpa Lokasi / Umum --</span>
+                                    @if (empty($locationId)) <span class="text-amber-500 text-xs font-bold">✓</span> @endif
+                                </div>
+                                @foreach ($locations as $loc)
+                                    <div 
+                                        @click="$wire.set('locationId', {{ $loc->id }}); openCreateLoc = false"
+                                        class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ $locationId == $loc->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                    >
+                                        <span>📍 {{ $loc->name }}</span>
+                                        @if ($locationId == $loc->id)
+                                            <span class="text-amber-500 text-xs font-bold">✓</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Satuan Dasar & Inline Unit Add Button -->
@@ -373,12 +406,45 @@
                             </div>
                         @endif
 
-                        <select wire:model="locationId" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sky-600 dark:text-sky-400 font-bold rounded-xl p-3.5 text-base outline-none cursor-pointer">
-                            <option value="">-- Tanpa Lokasi / Umum --</option>
-                            @foreach ($locations as $loc)
-                                <option value="{{ $loc->id }}">📍 {{ $loc->name }}</option>
-                            @endforeach
-                        </select>
+                        <!-- Custom Alpine Dropdown Location in Edit Modal -->
+                        <div class="relative" x-data="{ openEditLoc: false }" :class="{ 'z-[999]': openEditLoc }">
+                            <button 
+                                type="button" 
+                                @click="openEditLoc = !openEditLoc" 
+                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3.5 text-base font-semibold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
+                            >
+                                @php $selectedLoc = $locations->firstWhere('id', $locationId); @endphp
+                                <span>{{ $selectedLoc?->name ? '📍 ' . $selectedLoc->name : '-- Tanpa Lokasi / Umum --' }}</span>
+                                <span class="text-xs text-slate-400 ml-2">▼</span>
+                            </button>
+
+                            <div 
+                                x-show="openEditLoc" 
+                                @click.outside="openEditLoc = false" 
+                                x-transition
+                                class="absolute z-[999] left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50"
+                                style="display: none;"
+                            >
+                                <div 
+                                    @click="$wire.set('locationId', null); openEditLoc = false"
+                                    class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ empty($locationId) ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                >
+                                    <span>-- Tanpa Lokasi / Umum --</span>
+                                    @if (empty($locationId)) <span class="text-amber-500 text-xs font-bold">✓</span> @endif
+                                </div>
+                                @foreach ($locations as $loc)
+                                    <div 
+                                        @click="$wire.set('locationId', {{ $loc->id }}); openEditLoc = false"
+                                        class="p-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ $locationId == $loc->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                    >
+                                        <span>📍 {{ $loc->name }}</span>
+                                        @if ($locationId == $loc->id)
+                                            <span class="text-amber-500 text-xs font-bold">✓</span>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">

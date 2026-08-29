@@ -179,12 +179,50 @@
                         @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
+                    <!-- Alpine Custom Role Select: Create Modal -->
+                    <div class="relative" x-data="{ openRoleCreate: false }" @click.outside="openRoleCreate = false" @keydown.escape.window="openRoleCreate = false">
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Hak Akses / Role *</label>
-                        <select wire:model="role" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl p-3 text-sm outline-none">
-                            <option value="kasir">🛒 Staff Kasir (Akses POS & Checkout)</option>
-                            <option value="admin">👑 Admin Utama (Akses Penuh Master & Laporan)</option>
-                        </select>
+                        <button 
+                            type="button" 
+                            @click="openRoleCreate = !openRoleCreate" 
+                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl p-3 text-sm flex items-center justify-between cursor-pointer focus:border-amber-500 transition shadow-sm outline-none"
+                        >
+                            <span>
+                                @if ($role === 'admin')
+                                    👑 Admin Utama (Akses Penuh Master & Laporan)
+                                @else
+                                    🛒 Staff Kasir (Akses POS & Checkout)
+                                @endif
+                            </span>
+                            <span class="text-xs text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': openRoleCreate }">▼</span>
+                        </button>
+
+                        <div 
+                            x-show="openRoleCreate" 
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                            class="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-1 divide-y divide-slate-100 dark:divide-slate-700/40"
+                            style="display: none;"
+                        >
+                            <div 
+                                @click="$wire.set('role', 'kasir'); openRoleCreate = false"
+                                class="px-4 py-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition flex items-center justify-between {{ $role === 'kasir' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                            >
+                                <span>🛒 Staff Kasir (Akses POS & Checkout)</span>
+                                @if ($role === 'kasir') <span class="text-amber-500">✓</span> @endif
+                            </div>
+                            <div 
+                                @click="$wire.set('role', 'admin'); openRoleCreate = false"
+                                class="px-4 py-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition flex items-center justify-between {{ $role === 'admin' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                            >
+                                <span>👑 Admin Utama (Akses Penuh Master & Laporan)</span>
+                                @if ($role === 'admin') <span class="text-amber-500">✓</span> @endif
+                            </div>
+                        </div>
                         @error('role') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
@@ -230,12 +268,50 @@
                         @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
+                    <!-- Alpine Custom Role Select: Edit Modal -->
+                    <div class="relative" x-data="{ openRoleEdit: false }" @click.outside="openRoleEdit = false" @keydown.escape.window="openRoleEdit = false">
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Hak Akses / Role *</label>
-                        <select wire:model="role" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl p-3 text-sm outline-none">
-                            <option value="kasir">🛒 Staff Kasir (Akses POS & Checkout)</option>
-                            <option value="admin">👑 Admin Utama (Akses Penuh Master & Laporan)</option>
-                        </select>
+                        <button 
+                            type="button" 
+                            @click="openRoleEdit = !openRoleEdit" 
+                            class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl p-3 text-sm flex items-center justify-between cursor-pointer focus:border-amber-500 transition shadow-sm outline-none"
+                        >
+                            <span>
+                                @if ($role === 'admin')
+                                    👑 Admin Utama (Akses Penuh Master & Laporan)
+                                @else
+                                    🛒 Staff Kasir (Akses POS & Checkout)
+                                @endif
+                            </span>
+                            <span class="text-xs text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': openRoleEdit }">▼</span>
+                        </button>
+
+                        <div 
+                            x-show="openRoleEdit" 
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                            class="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-1 divide-y divide-slate-100 dark:divide-slate-700/40"
+                            style="display: none;"
+                        >
+                            <div 
+                                @click="$wire.set('role', 'kasir'); openRoleEdit = false"
+                                class="px-4 py-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition flex items-center justify-between {{ $role === 'kasir' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                            >
+                                <span>🛒 Staff Kasir (Akses POS & Checkout)</span>
+                                @if ($role === 'kasir') <span class="text-amber-500">✓</span> @endif
+                            </div>
+                            <div 
+                                @click="$wire.set('role', 'admin'); openRoleEdit = false"
+                                class="px-4 py-3 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition flex items-center justify-between {{ $role === 'admin' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                            >
+                                <span>👑 Admin Utama (Akses Penuh Master & Laporan)</span>
+                                @if ($role === 'admin') <span class="text-amber-500">✓</span> @endif
+                            </div>
+                        </div>
                         @error('role') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
 
