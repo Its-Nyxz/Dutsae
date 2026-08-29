@@ -1,21 +1,19 @@
-<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-6 space-y-6 font-sans transition-colors duration-200">
+<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 sm:p-6 space-y-4 sm:space-y-6 font-sans transition-colors duration-200">
 
     <!-- Header -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex justify-between items-center transition-colors">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white">Master Data Supplier (Pemasok)</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Daftar pabrik, distributor, dan pemasok bahan bangunan</p>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Master Data Supplier (Pemasok)</h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">Daftar pabrik, distributor, dan pemasok bahan bangunan</p>
         </div>
         <x-ui.button variant="amber" size="lg" wire:click="openCreateModal">
             + Tambah Supplier Baru
         </x-ui.button>
     </div>
 
-
-
     <!-- Table -->
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl overflow-hidden p-5 space-y-4 transition-colors">
-        <div class="w-80">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl overflow-hidden p-4 sm:p-5 space-y-4 transition-colors">
+        <div class="w-full sm:w-80">
             <x-ui.input wire:model.live.debounce.150ms="search" placeholder="Cari Supplier..." />
         </div>
 

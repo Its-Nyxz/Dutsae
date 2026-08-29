@@ -1,33 +1,78 @@
-<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-6 space-y-6 font-sans transition-colors duration-200">
+<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 sm:p-6 space-y-4 sm:space-y-6 font-sans transition-colors duration-200">
 
     <!-- Header Banner -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-wrap justify-between items-center gap-4 transition-colors">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white">Manajemen Pengguna (Staff & Admin)</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola akun akses sistem POS untuk Admin Utama dan Kasir toko</p>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Manajemen Pengguna (Staff & Admin)</h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">Kelola akun akses sistem POS untuk Admin Utama dan Kasir toko</p>
         </div>
-        <button wire:click="openCreateModal" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-5 py-3 rounded-xl shadow-lg shadow-amber-500/20 text-base cursor-pointer transition">
+        <button wire:click="openCreateModal" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-5 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-amber-500/20 text-sm sm:text-base cursor-pointer transition">
             + Tambah Pengguna Baru
         </button>
     </div>
 
     <!-- Search & Filter Controls -->
-    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-wrap items-center justify-between gap-4 transition-colors">
-        <div class="flex flex-wrap items-center gap-4 text-base w-full md:w-auto">
-            <div class="w-full md:w-80">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-wrap items-center justify-between gap-3 sm:gap-4 transition-colors">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4 text-base w-full md:w-auto">
+            <div class="w-full sm:w-80">
                 <input 
                     type="text" 
                     wire:model.live.debounce.150ms="search" 
                     placeholder="🔍 Cari nama atau email..." 
-                    class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 outline-none text-sm font-semibold"
+                    class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 outline-none text-xs sm:text-sm font-semibold"
                 >
             </div>
-            <div class="w-full md:w-48">
-                <select wire:model.live="roleFilter" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl px-4 py-2.5 outline-none text-sm">
-                    <option value="">Semua Role Access</option>
-                    <option value="admin">👑 Admin Utama</option>
-                    <option value="kasir">🛒 Staff Kasir</option>
-                </select>
+            <div class="w-full sm:w-56 relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                <button 
+                    type="button" 
+                    @click="open = !open" 
+                    class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-bold rounded-xl px-4 py-2.5 outline-none text-xs sm:text-sm flex items-center justify-between cursor-pointer focus:border-amber-500 transition shadow-sm"
+                >
+                    <span>
+                        @if ($roleFilter === 'admin')
+                            👑 Admin Utama
+                        @elseif ($roleFilter === 'kasir')
+                            🛒 Staff Kasir
+                        @else
+                            ⚡ Semua Role Access
+                        @endif
+                    </span>
+                    <span class="text-xs text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': open }">▼</span>
+                </button>
+
+                <div 
+                    x-show="open" 
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                    class="absolute z-50 left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl overflow-hidden py-1 divide-y divide-slate-100 dark:divide-slate-700/40"
+                    style="display: none;"
+                >
+                    <div 
+                        @click="$wire.set('roleFilter', ''); open = false"
+                        class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $roleFilter === '' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                    >
+                        <span>⚡ Semua Role Access</span>
+                        @if ($roleFilter === '') <span class="text-amber-500">✓</span> @endif
+                    </div>
+                    <div 
+                        @click="$wire.set('roleFilter', 'admin'); open = false"
+                        class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $roleFilter === 'admin' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                    >
+                        <span>👑 Admin Utama</span>
+                        @if ($roleFilter === 'admin') <span class="text-amber-500">✓</span> @endif
+                    </div>
+                    <div 
+                        @click="$wire.set('roleFilter', 'kasir'); open = false"
+                        class="px-4 py-2.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition flex items-center justify-between {{ $roleFilter === 'kasir' ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-black' : 'text-slate-700 dark:text-slate-300' }}"
+                    >
+                        <span>🛒 Staff Kasir</span>
+                        @if ($roleFilter === 'kasir') <span class="text-amber-500">✓</span> @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -9,6 +9,12 @@ test('profile page is displayed', function () {
     $this->get(route('profile.edit'))->assertOk();
 });
 
+test('guide documentation page is displayed', function () {
+    $this->actingAs($user = User::factory()->create());
+
+    $this->get(route('guide.index'))->assertOk()->assertSee('Buku Panduan & Dokumentasi Sistem');
+});
+
 test('profile information can be updated', function () {
     $user = User::factory()->create();
 

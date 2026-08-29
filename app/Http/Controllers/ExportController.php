@@ -20,24 +20,46 @@ class ExportController extends Controller
         $startDate = $request->query('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->query('end_date', Carbon::now()->format('Y-m-d'));
         $search = trim($request->query('search', ''));
+        $paymentMethod = trim($request->query('payment_method', ''));
+        $paymentStatus = trim($request->query('payment_status', ''));
 
         $query = Sale::with(['customer', 'cashier', 'payments'])
             ->where('store_id', $storeId)
+            ->where('status', 'completed')
             ->whereDate('sold_at', '>=', $startDate)
             ->whereDate('sold_at', '<=', $endDate);
+
+        if ($paymentMethod !== '') {
+            $query->whereHas('payments', fn ($p) => $p->where('payment_method', $paymentMethod));
+        }
+
+        if ($paymentStatus !== '') {
+            if ($paymentStatus === 'paid') {
+                $query->whereDoesntHave('payments', fn ($p) => $p->whereIn('payment_method', ['receivable', 'credit']));
+            } elseif ($paymentStatus === 'receivable') {
+                $query->whereHas('payments', fn ($p) => $p->whereIn('payment_method', ['receivable', 'credit']));
+            }
+        }
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('invoice_number', 'like', "%{$search}%")
-                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('cashier', fn ($u) => $u->where('name', 'like', "%{$search}%"));
             });
         }
 
         $sales = $query->latest('sold_at')->get();
 
+        $totalSubtotal = (float) $sales->sum('subtotal');
+        $totalDiscount = (float) $sales->sum('discount_total');
+        $totalGrand = (float) $sales->sum('grand_total');
+        $totalPaid = (float) $sales->sum('paid_amount');
+        $totalOutstanding = (float) $sales->sum('outstanding_amount');
+
         $filename = 'Laporan-Omzet-Penjualan-'.$startDate.'-sd-'.$endDate.'.xls';
 
-        return response()->streamDownload(function () use ($sales, $startDate, $endDate) {
+        return response()->streamDownload(function () use ($sales, $startDate, $endDate, $totalSubtotal, $totalDiscount, $totalGrand, $totalPaid, $totalOutstanding) {
             echo '
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head>
@@ -51,9 +73,9 @@ class ExportController extends Controller
             </head>
             <body>
                 <table>
-                    <tr><td colspan="10" class="title">LAPORAN OMZET PENJUALAN TOKO DUTA SAE</td></tr>
-                    <tr><td colspan="10" style="text-align:center;">Periode: '.Carbon::parse($startDate)->format('d/m/Y').' s/d '.Carbon::parse($endDate)->format('d/m/Y').'</td></tr>
-                    <tr><td colspan="10"></td></tr>
+                    <tr><td colspan="12" class="title">LAPORAN OMZET PENJUALAN TOKO DUTA SAE</td></tr>
+                    <tr><td colspan="12" style="text-align:center;">Periode: '.Carbon::parse($startDate)->format('d/m/Y').' s/d '.Carbon::parse($endDate)->format('d/m/Y').'</td></tr>
+                    <tr><td colspan="12"></td></tr>
                     <thead>
                         <tr>
                             <th>No</th>
@@ -62,15 +84,22 @@ class ExportController extends Controller
                             <th>Nama Pelanggan</th>
                             <th>Kasir</th>
                             <th>Metode Bayar</th>
-                            <th>Status</th>
+                            <th>Status Bayar</th>
                             <th>Subtotal (Rp)</th>
                             <th>Diskon (Rp)</th>
                             <th>Grand Total (Rp)</th>
+                            <th>Dibayar (Rp)</th>
+                            <th>Sisa Piutang (Rp)</th>
                         </tr>
                     </thead>
                     <tbody>';
             foreach ($sales as $idx => $s) {
                 $pay = $s->payments->first();
+                $statusText = match ($s->payment_status) {
+                    'paid' => 'LUNAS',
+                    'partial' => 'SEBAGIAN',
+                    default => 'PIUTANG/BON',
+                };
                 echo '
                         <tr>
                             <td style="text-align:center;">'.($idx + 1).'</td>
@@ -79,13 +108,23 @@ class ExportController extends Controller
                             <td>'.htmlspecialchars($s->customer?->name ?? 'Pelanggan Umum (Cash)').'</td>
                             <td>'.htmlspecialchars($s->cashier?->name ?? '-').'</td>
                             <td style="text-align:center;">'.strtoupper($pay?->payment_method ?? 'CASH').'</td>
-                            <td style="text-align:center;">'.strtoupper($s->status).'</td>
+                            <td style="text-align:center; font-weight:bold;">'.$statusText.'</td>
                             <td class="num">'.number_format($s->subtotal, 0, ',', '.').'</td>
                             <td class="num">'.number_format($s->discount_total, 0, ',', '.').'</td>
                             <td class="num" style="font-weight:bold; color:#d97706;">'.number_format($s->grand_total, 0, ',', '.').'</td>
+                            <td class="num" style="color:#059669;">'.number_format($s->paid_amount, 0, ',', '.').'</td>
+                            <td class="num" style="color:#dc2626;">'.number_format($s->outstanding_amount, 0, ',', '.').'</td>
                         </tr>';
             }
             echo '
+                        <tr style="font-weight:bold; background-color:#f1f5f9;">
+                            <td colspan="7" style="text-align:right;">TOTAL KESELURUHAN:</td>
+                            <td class="num">'.number_format($totalSubtotal, 0, ',', '.').'</td>
+                            <td class="num">'.number_format($totalDiscount, 0, ',', '.').'</td>
+                            <td class="num" style="color:#d97706;">'.number_format($totalGrand, 0, ',', '.').'</td>
+                            <td class="num" style="color:#059669;">'.number_format($totalPaid, 0, ',', '.').'</td>
+                            <td class="num" style="color:#dc2626;">'.number_format($totalOutstanding, 0, ',', '.').'</td>
+                        </tr>
                     </tbody>
                 </table>
             </body>

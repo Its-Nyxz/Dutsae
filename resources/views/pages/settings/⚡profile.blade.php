@@ -6,10 +6,11 @@ use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-new #[Title('Profile settings')] class extends Component {
+new #[Layout('components.layouts.app')] #[Title('Profil Pengguna - Toko Duta Sae')] class extends Component {
     use ProfileValidationRules;
 
     public string $name = '';
@@ -77,16 +78,33 @@ new #[Title('Profile settings')] class extends Component {
 }; ?>
 
 <section class="w-full">
-    @include('partials.settings-heading')
+    <x-pages::settings.layout :heading="__('Profil Pengguna')" :subheading="__('Kelola informasi akun, peran otorisasi, dan petunjuk sistem')">
+        <!-- Account Status & Role Card -->
+        @php $currentUser = Auth::user(); @endphp
+        <div class="my-4 p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase text-slate-500 dark:text-slate-400">Peran Otorisasi</span>
+                @if ($currentUser?->isAdmin())
+                    <span class="bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40 text-xs px-2.5 py-0.5 rounded-full font-black">
+                        👑 Admin Utama
+                    </span>
+                @else
+                    <span class="bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/40 text-xs px-2.5 py-0.5 rounded-full font-bold">
+                        👤 Kasir Toko
+                    </span>
+                @endif
+            </div>
+            <div class="text-xs text-slate-600 dark:text-slate-300 flex justify-between">
+                <span>Toko / Cabang:</span>
+                <span class="font-bold text-slate-900 dark:text-white">{{ $currentUser?->store?->name ?? 'Toko Duta Sae' }}</span>
+            </div>
+        </div>
 
-    <flux:heading level="2" class="sr-only">{{ __('Profile settings') }}</flux:heading>
-
-    <x-pages::settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <flux:input wire:model="name" :label="__('Nama Lengkap')" type="text" required autofocus autocomplete="name" />
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <flux:input wire:model="email" :label="__('Alamat Email')" type="email" required autocomplete="email" />
 
                 @if ($this->hasUnverifiedEmail)
                     <div>
@@ -110,12 +128,33 @@ new #[Title('Profile settings')] class extends Component {
             <div class="flex items-center gap-4">
                 <div class="flex items-center justify-end">
                     <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
+                        {{ __('Simpan Perubahan') }}
                     </flux:button>
                 </div>
-
             </div>
         </form>
+
+        <!-- Quick System Guide Card in Profile -->
+        <div class="my-8 p-5 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl space-y-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📖</span>
+                    <h4 class="font-extrabold text-sm text-slate-900 dark:text-white">Panduan Penggunaan Sistem</h4>
+                </div>
+                <a href="{{ route('guide.index') }}" wire:navigate class="text-xs font-black text-amber-600 dark:text-amber-400 hover:underline">
+                    Lihat Selengkapnya &rarr;
+                </a>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Pelajari alur kasir POS cepat, hierarki multi-satuan barang, pelacakan lokasi rak, pencatatan stok supplier, dan pembukuan piutang pelanggan.
+            </p>
+            <div class="pt-1">
+                <a href="{{ route('guide.index') }}" wire:navigate class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs shadow-sm transition">
+                    <span>Buka Dokumentasi & Panduan Lengkap</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
+        </div>
 
         @if ($this->showDeleteUser)
             <livewire:pages::settings.delete-user-form />

@@ -117,10 +117,11 @@
                                 </div>
                             </div>
                         @endif
+                      
                     </div>
                 </div>
 
-                <!-- Right Actions, Theme Switcher, Notifications & Logout -->
+                <!-- Right Actions, Theme Switcher, Notifications & Interactive User Dropdown -->
                 <div class="flex items-center gap-2.5 shrink-0">
 
                     <!-- Dark / Light Mode Toggle Button -->
@@ -135,23 +136,62 @@
                     <!-- Livewire Notification Bell Dropdown -->
                     @livewire('notifications.dropdown')
 
-                    <!-- User Profile & Logout Form -->
+                    <!-- Interactive User Profile Dropdown -->
                     @auth
-                        <div class="flex items-center gap-2.5 border-l border-slate-300 dark:border-slate-700 pl-2.5">
-                            <div class="text-right hidden sm:block text-xs">
-                                <div class="font-extrabold text-slate-900 dark:text-white leading-tight">{{ Auth::user()->name }}</div>
-                                <div class="font-mono uppercase text-[10px] font-black {{ Auth::user()->isAdmin() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}">
-                                    {{ Auth::user()->role }}
+                        <div class="relative" x-data="{ userMenuOpen: false }">
+                            <!-- Trigger Button -->
+                            <button 
+                                @click="userMenuOpen = !userMenuOpen"
+                                class="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-750 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
+                                title="Klik untuk Buka Profil & Panduan"
+                            >
+                                <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-xs shadow-sm">
+                                    {{ Auth::user()->initials() }}
+                                </div>
+                                <div class="text-left hidden sm:block text-xs leading-tight">
+                                    <div class="font-extrabold text-slate-900 dark:text-white truncate max-w-[110px]">{{ Auth::user()->name }}</div>
+                                    <div class="font-mono uppercase text-[10px] font-black {{ Auth::user()->isAdmin() ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                                        {{ Auth::user()->isAdmin() ? '👑 Admin' : '👤 Kasir' }}
+                                    </div>
+                                </div>
+                                <span class="text-[10px] text-slate-400">▼</span>
+                            </button>
+
+                            <!-- Floating Dropdown Menu -->
+                            <div 
+                                x-show="userMenuOpen" 
+                                @click.outside="userMenuOpen = false" 
+                                x-transition
+                                class="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-100 dark:divide-slate-700/50"
+                                style="display: none;"
+                            >
+                                <div class="p-3.5 bg-slate-50 dark:bg-slate-900/60">
+                                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Akun Masuk</p>
+                                    <p class="font-extrabold text-sm text-slate-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ Auth::user()->email }}</p>
+                                </div>
+
+                                <div class="p-1.5 space-y-0.5 text-xs font-bold">
+                                    <a href="{{ route('profile.edit') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition">
+                                        <span>👤</span>
+                                        <span>Profil Pengguna</span>
+                                    </a>
+                                    <a href="{{ route('guide.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 transition">
+                                        <span>📖</span>
+                                        <span>Panduan Penggunaan Sistem</span>
+                                    </a>
+                                </div>
+
+                                <div class="p-1.5">
+                                    <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                        @csrf
+                                        <button type="submit" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition cursor-pointer">
+                                            <span>🚪</span>
+                                            <span>Logout / Keluar</span>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
-
-                            <!-- Logout Button -->
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" title="Logout" class="bg-red-500/10 hover:bg-red-600 hover:text-white text-red-600 dark:text-red-400 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
-                                    Logout
-                                </button>
-                            </form>
                         </div>
                     @endauth
                 </div>
@@ -177,6 +217,9 @@
                 </a>
                 <a href="{{ route('receivables.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('receivables.*') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                     💳 Buku Piutang Pelanggan
+                </a>
+                <a href="{{ route('guide.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('guide.*') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                    📖 Panduan Penggunaan Sistem
                 </a>
 
                 @if (Auth::user()?->isAdmin())
@@ -212,6 +255,13 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Profile & Settings in Mobile Drawer -->
+                <div class="pt-2 border-t border-slate-200 dark:border-slate-700 space-y-1">
+                    <a href="{{ route('profile.edit') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                        👤 Profil & Pengaturan Akun
+                    </a>
+                </div>
             </div>
         </div>
     </nav>

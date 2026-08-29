@@ -23,12 +23,11 @@ test('cashier can create a new customer inline directly inside checkout screen',
         ->set('newCustomerCode', 'CUST-99')
         ->set('newCustomerName', 'CV Bangun Jaya Utama')
         ->set('newCustomerPhone', '0812999000')
-        ->set('newCustomerCreditLimit', 10000000)
         ->set('newCustomerTermsDays', 14)
         ->call('createInlineCustomer')
         ->assertHasNoErrors();
 
     $customer = Customer::where('name', 'CV Bangun Jaya Utama')->first();
     expect($customer)->not->toBeNull();
-    expect((float) $customer->credit_limit)->toBe(10000000.0);
+    expect($customer->payment_terms_days)->toBe(14);
 });

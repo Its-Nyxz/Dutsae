@@ -1,20 +1,20 @@
-<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-6 space-y-6 font-sans transition-colors duration-200">
+<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 sm:p-6 space-y-4 sm:space-y-6 font-sans transition-colors duration-200">
 
     <!-- Header -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-wrap justify-between items-center gap-4 transition-colors">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white">Penerimaan Barang Masuk (Supplier)</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Catat transaksi pasokan barang dari pabrik/supplier untuk menambah stok fisik gudang</p>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Penerimaan Barang Masuk (Supplier)</h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">Catat transaksi pasokan barang dari pabrik/supplier untuk menambah stok fisik gudang</p>
         </div>
     </div>
 
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl space-y-6 transition-colors">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl space-y-4 sm:space-y-6 transition-colors">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <!-- Supplier Dropdown with Inline Create Supplier Form -->
             <div>
                 <div class="flex justify-between items-center mb-1">
-                    <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">Pemasok / Supplier</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase">Pemasok / Supplier</label>
                     <button 
                         type="button" 
                         wire:click="$set('showInlineSupplierForm', {{ $showInlineSupplierForm ? 'false' : 'true' }})" 
@@ -26,15 +26,15 @@
 
                 <!-- Inline Supplier Creation Form -->
                 @if ($showInlineSupplierForm)
-                    <div class="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl border border-amber-500/50 space-y-3 mb-3 shadow-lg">
-                        <div class="text-sm font-bold text-amber-600 dark:text-amber-400">✨ Tambah Master Supplier Baru</div>
-                        <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div class="bg-slate-100 dark:bg-slate-900 p-3.5 sm:p-4 rounded-xl border border-amber-500/50 space-y-3 mb-3 shadow-lg">
+                        <div class="text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400">✨ Tambah Master Supplier Baru</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                             <input type="text" wire:model="newSupplierCode" placeholder="Kode (mis: SUP-03)" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 outline-none">
                             <input type="text" wire:model="newSupplierName" placeholder="Nama Pabrik / Supplier *" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 outline-none">
                         </div>
-                        <input type="text" wire:model="newSupplierPhone" placeholder="No. Telepon / HP (mis: 08123456789)" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 text-sm outline-none">
-                        <textarea wire:model="newSupplierAddress" rows="2" placeholder="Alamat supplier..." class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 text-sm outline-none"></textarea>
-                        <button type="button" wire:click="createInlineSupplier" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm cursor-pointer shadow-sm">
+                        <input type="text" wire:model="newSupplierPhone" placeholder="No. Telepon / HP (mis: 08123456789)" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 text-xs sm:text-sm outline-none">
+                        <textarea wire:model="newSupplierAddress" rows="2" placeholder="Alamat supplier..." class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded p-2.5 text-xs sm:text-sm outline-none"></textarea>
+                        <button type="button" wire:click="createInlineSupplier" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-xs sm:text-sm cursor-pointer shadow-sm">
                             + Simpan Supplier & Gunakan
                         </button>
                     </div>
@@ -45,7 +45,7 @@
                     <button 
                         type="button" 
                         @click="openSupp = !openSupp" 
-                        class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3.5 text-base font-semibold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
+                        class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 sm:p-3.5 text-sm sm:text-base font-semibold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
                     >
                         @php $selectedSupp = $suppliers->firstWhere('id', $supplierId); @endphp
                         <span>{{ $selectedSupp?->name ? $selectedSupp->name . ' (' . $selectedSupp->code . ')' : '-- Pilih Supplier --' }}</span>
@@ -64,14 +64,14 @@
                                 type="text" 
                                 x-model="searchSupp" 
                                 placeholder="Cari nama supplier..." 
-                                class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-3 py-2 text-sm outline-none"
+                                class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl px-3 py-2 text-xs sm:text-sm outline-none"
                             >
                         </div>
                         <div class="max-h-60 overflow-y-auto">
                             @foreach ($suppliers as $s)
                                 <div 
                                     @click="$wire.set('supplierId', {{ $s->id }}); openSupp = false"
-                                    class="p-3.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ $supplierId == $s->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                    class="p-3 sm:p-3.5 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer font-bold text-xs sm:text-sm transition border-b border-slate-100 dark:border-slate-700/30 flex justify-between items-center {{ $supplierId == $s->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
                                     x-show="!searchSupp || '{{ strtolower(addslashes($s->name)) }}'.includes(searchSupp.toLowerCase())"
                                 >
                                     <span>🏢 {{ $s->name }} <span class="text-xs text-slate-400 font-mono">({{ $s->code }})</span></span>
@@ -86,27 +86,27 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">No. Surat Jalan / Faktur Supplier</label>
-                <input type="text" wire:model="invoiceSupplierNumber" placeholder="misal: SJ-2026-0012" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-400 font-bold rounded-xl p-3.5 text-base outline-none">
+                <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">No. Surat Jalan / Faktur Supplier</label>
+                <input type="text" wire:model="invoiceSupplierNumber" placeholder="misal: SJ-2026-0012" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-400 font-bold rounded-xl p-3 sm:p-3.5 text-sm sm:text-base outline-none">
             </div>
         </div>
 
         <!-- Purchase Items Table -->
         <div class="space-y-3">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-slate-900 dark:text-white text-base uppercase tracking-wider">Daftar Barang Diterima</h3>
-                <button wire:click="addItemRow" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-amber-700 dark:text-amber-400 font-bold px-4 py-2 rounded-lg text-sm cursor-pointer">+ Tambah Baris</button>
+                <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base uppercase tracking-wider">Daftar Barang Diterima</h3>
+                <button wire:click="addItemRow" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-amber-700 dark:text-amber-400 font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm cursor-pointer">+ Tambah Baris</button>
             </div>
 
-            <div class="overflow-visible min-h-[220px]">
-                <table class="w-full text-left text-base text-slate-800 dark:text-slate-200">
-                    <thead class="bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">
+            <div class="overflow-x-auto min-h-[220px]">
+                <table class="w-full text-left text-sm sm:text-base text-slate-800 dark:text-slate-200 min-w-[620px] sm:min-w-full">
+                    <thead class="bg-slate-100 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase whitespace-nowrap">
                         <tr>
-                            <th class="p-3.5">Nama Produk</th>
-                            <th class="p-3.5 w-40">Satuan</th>
-                            <th class="p-3.5 w-32 text-center">Qty Diterima</th>
-                            <th class="p-3.5 w-44 text-right">Harga Beli / Unit (Rp)</th>
-                            <th class="p-3.5 w-12 text-center">Hapus</th>
+                            <th class="p-3 sm:p-3.5">Nama Produk</th>
+                            <th class="p-3 sm:p-3.5 w-40">Satuan</th>
+                            <th class="p-3 sm:p-3.5 w-32 text-center">Qty Diterima</th>
+                            <th class="p-3 sm:p-3.5 w-44 text-right">Harga Beli / Unit (Rp)</th>
+                            <th class="p-3 sm:p-3.5 w-12 text-center">Hapus</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-700/60 overflow-visible">

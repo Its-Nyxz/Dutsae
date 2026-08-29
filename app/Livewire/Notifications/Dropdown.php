@@ -25,7 +25,29 @@ class Dropdown extends Component
 
         $notifications = [];
 
-        // Low stock notifications
+        // 1. Piutang / Bon Jatuh Tempo & Segera Jatuh Tempo (H-3)
+        $dueSales = Sale::where('store_id', $storeId)
+            ->where('status', 'completed')
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<=', now()->addDays(3))
+            ->whereHas('payments', fn ($q) => $q->whereIn('payment_method', ['receivable', 'credit']))
+            ->with(['customer', 'payments'])
+            ->get()
+            ->filter(fn ($s) => $s->outstanding_amount > 0);
+
+        foreach ($dueSales as $sale) {
+            $isOverdue = $sale->due_date->isPast();
+            $customerName = $sale->customer?->name ?? 'Pelanggan';
+            $notifications[] = [
+                'type' => 'due_receivable',
+                'title' => $isOverdue ? '🚨 Bon Lewat Jatuh Tempo' : '⚠️ Bon Mendekati Jatuh Tempo',
+                'message' => "Bon {$customerName} (#{$sale->invoice_number}) sisa Rp ".number_format($sale->outstanding_amount, 0, ',', '.')." (Jatuh Tempo: {$sale->due_date->format('d/m/Y')})",
+                'created_at' => $sale->due_date->diffForHumans(),
+                'url' => route('receivables.index'),
+            ];
+        }
+
+        // 2. Low stock notifications
         $lowStock = $dashboardService->getLowStockProducts($storeId);
         foreach ($lowStock as $p) {
             $notifications[] = [
@@ -33,10 +55,11 @@ class Dropdown extends Component
                 'title' => 'Stok Menipis',
                 'message' => "{$p->name} tersisa ".number_format($p->current_stock_base, 2, ',', '.')." {$p->baseUnit?->unit?->name}",
                 'created_at' => now()->diffForHumans(),
+                'url' => route('products.index'),
             ];
         }
 
-        // Recent sales notifications for Admin
+        // 3. Recent sales notifications for Admin
         if ($user && $user->isAdmin()) {
             $recentSales = Sale::where('store_id', $storeId)
                 ->where('status', 'completed')
@@ -50,6 +73,7 @@ class Dropdown extends Component
                     'title' => 'Penjualan Baru',
                     'message' => "Invoice #{$sale->invoice_number} senilai Rp ".number_format($sale->grand_total, 0, ',', '.'),
                     'created_at' => $sale->sold_at->diffForHumans(),
+                    'url' => route('pos'),
                 ];
             }
         }

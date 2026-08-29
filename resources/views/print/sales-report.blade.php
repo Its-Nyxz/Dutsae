@@ -143,8 +143,13 @@
             <div class="report-title">
                 <h2>LAPORAN OMZET PENJUALAN</h2>
                 <p>Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
-                @if ($search)
-                    <p style="font-size: 10px; font-weight: normal; color: #64748b;">Filter Pencarian: "{{ $search }}"</p>
+                @if ($search || !empty($paymentMethod) || !empty($paymentStatus))
+                    <p style="font-size: 10px; font-weight: normal; color: #64748b;">
+                        Filter: 
+                        @if(!empty($paymentMethod)) [Metode: {{ strtoupper($paymentMethod) }}] @endif
+                        @if(!empty($paymentStatus)) [Status: {{ strtoupper($paymentStatus) }}] @endif
+                        @if($search) [Cari: "{{ $search }}"] @endif
+                    </p>
                 @endif
             </div>
         </div>
@@ -174,13 +179,14 @@
             <thead>
                 <tr>
                     <th style="width: 30px; text-align: center;">No</th>
-                    <th style="width: 140px;">No. Faktur</th>
-                    <th style="width: 120px;">Tanggal & Jam</th>
+                    <th style="width: 130px;">No. Faktur</th>
+                    <th style="width: 110px;">Tanggal & Jam</th>
                     <th>Pelanggan</th>
-                    <th style="width: 100px;">Kasir</th>
-                    <th style="width: 80px; text-align: center;">Metode</th>
-                    <th style="width: 80px; text-align: center;">Status</th>
-                    <th style="width: 120px; text-align: right;">Total Faktur</th>
+                    <th style="width: 90px;">Kasir</th>
+                    <th style="width: 70px; text-align: center;">Metode</th>
+                    <th style="width: 70px; text-align: center;">Status</th>
+                    <th style="width: 100px; text-align: right;">Total Faktur</th>
+                    <th style="width: 90px; text-align: right;">Dibayar</th>
                 </tr>
             </thead>
             <tbody>
@@ -189,26 +195,31 @@
                     <tr>
                         <td style="text-align: center;">{{ $index + 1 }}</td>
                         <td style="font-family: monospace; font-weight: bold;">{{ $s->invoice_number }}</td>
-                        <td>{{ $s->sold_at->format('d/m/Y H:i') }}</td>
+                        <td>{{ $s->sold_at ? $s->sold_at->format('d/m/Y H:i') : '-' }}</td>
                         <td><strong>{{ $s->customer?->name ?? 'Pelanggan Umum (Cash)' }}</strong></td>
                         <td>{{ $s->cashier?->name ?? '-' }}</td>
                         <td style="text-align: center; text-transform: uppercase; font-size: 10px; font-weight: bold;">
                             {{ $pay?->payment_method ?? 'CASH' }}
                         </td>
                         <td style="text-align: center; font-size: 10px; font-weight: bold;">
-                            @if ($s->status === 'completed')
+                            @if ($s->payment_status === 'paid')
                                 <span style="color: #059669;">LUNAS</span>
+                            @elseif ($s->payment_status === 'partial')
+                                <span style="color: #d97706;">SEBAGIAN</span>
                             @else
-                                <span style="color: #dc2626;">TEMPO</span>
+                                <span style="color: #dc2626;">PIUTANG</span>
                             @endif
                         </td>
-                        <td style="text-align: right; font-family: monospace; font-weight: bold;">
+                        <td style="text-align: right; font-family: monospace; font-weight: bold; color: #d97706;">
                             Rp {{ number_format($s->grand_total, 0, ',', '.') }}
+                        </td>
+                        <td style="text-align: right; font-family: monospace; font-weight: bold; color: #059669;">
+                            Rp {{ number_format($s->paid_amount, 0, ',', '.') }}
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" style="text-align: center; color: #94a3b8; padding: 20px;">
+                        <td colspan="9" style="text-align: center; color: #94a3b8; padding: 20px;">
                             Tidak ada transaksi penjualan pada periode ini.
                         </td>
                     </tr>
@@ -216,9 +227,12 @@
             </tbody>
             <tfoot>
                 <tr style="font-weight: bold; background: #f1f5f9;">
-                    <td colspan="7" style="text-align: right; font-size: 12px; text-transform: uppercase;">TOTAL KESELURUHAN OMZET:</td>
-                    <td style="text-align: right; font-family: monospace; font-size: 14px; color: #d97706;">
+                    <td colspan="7" style="text-align: right; font-size: 11px; text-transform: uppercase;">TOTAL KESELURUHAN OMZET:</td>
+                    <td style="text-align: right; font-family: monospace; font-size: 12px; color: #d97706;">
                         Rp {{ number_format($totalTurnover, 0, ',', '.') }}
+                    </td>
+                    <td style="text-align: right; font-family: monospace; font-size: 12px; color: #059669;">
+                        Rp {{ number_format($totalPaid, 0, ',', '.') }}
                     </td>
                 </tr>
             </tfoot>

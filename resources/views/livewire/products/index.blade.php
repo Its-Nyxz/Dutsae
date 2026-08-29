@@ -1,16 +1,16 @@
-<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-6 space-y-6 font-sans transition-colors duration-200">
+<div class="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 p-4 sm:p-6 space-y-4 sm:space-y-6 font-sans transition-colors duration-200">
 
     <!-- Header -->
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-wrap justify-between items-center gap-4 transition-colors">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 transition-colors">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 dark:text-white">Master Data Barang & Satuan</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola katalog produk, posisi lokasi rak, multi-satuan konversi, dan harga jual</p>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Master Data Barang & Satuan</h1>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1">Kelola katalog produk, posisi lokasi rak, multi-satuan konversi, dan harga jual</p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <a 
                 href="{{ route('exports.products') }}" 
                 target="_blank"
-                class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-5 py-2.5 rounded-xl text-sm transition cursor-pointer shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+                class="bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm transition cursor-pointer shadow-lg shadow-emerald-600/20 flex items-center gap-2"
             >
                 📊 Export Excel (.xls)
             </a>
@@ -20,16 +20,14 @@
         </div>
     </div>
 
-
-
     <!-- Table & Search Box -->
-    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl overflow-hidden space-y-4 p-5 transition-colors">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-xl overflow-hidden space-y-4 p-4 sm:p-5 transition-colors">
         <div class="flex justify-between items-center">
             <input 
                 type="text" 
                 wire:model.live.debounce.150ms="search" 
                 placeholder="Cari berdasarkan Kode Barang atau Nama..."
-                class="w-96 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-3 text-sm outline-none focus:border-amber-500"
+                class="w-full sm:w-80 md:w-96 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm outline-none focus:border-amber-500"
             >
         </div>
 

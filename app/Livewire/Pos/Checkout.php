@@ -458,22 +458,108 @@ class Checkout extends Component
         }
     }
 
+    public function deleteHoldCart(int $holdIndex)
+    {
+        if (isset($this->holdCarts[$holdIndex])) {
+            array_splice($this->holdCarts, $holdIndex, 1);
+            if (empty($this->holdCarts)) {
+                $this->showHoldModal = false;
+            }
+            $this->dispatch('swal-toast', message: 'Transaksi yang ditahan berhasil dihapus.', icon: 'info');
+        }
+    }
+
+    public function setPaymentMethod(string $method): void
+    {
+        $this->paymentMethod = $method;
+        if ($method !== 'cash') {
+            $this->amountPaid = $this->grandTotal;
+        }
+
+        if ($method === 'receivable' && $this->selectedCustomerId && empty($this->dueDate)) {
+            $customer = Customer::find($this->selectedCustomerId);
+            if ($customer && $customer->payment_terms_days > 0) {
+                $this->dueDate = now()->addDays($customer->payment_terms_days)->format('Y-m-d');
+            }
+        }
+    }
+
+    public function updatedSelectedCustomerId($value): void
+    {
+        if ($this->paymentMethod === 'receivable' && $value) {
+            $customer = Customer::find($value);
+            if ($customer && $customer->payment_terms_days > 0) {
+                $this->dueDate = now()->addDays($customer->payment_terms_days)->format('Y-m-d');
+            }
+        }
+    }
+
+    public function setExactAmount(): void
+    {
+        $this->amountPaid = $this->grandTotal;
+        $this->dispatch('swal-toast', message: 'Nominal diatur sesuai Uang Pas.', icon: 'info');
+    }
+
+    public function setPresetAmount(float $amount): void
+    {
+        $this->amountPaid = $amount;
+    }
+
+    public function addPresetCash(float $increment): void
+    {
+        $current = is_numeric($this->amountPaid) ? (float) $this->amountPaid : 0.0;
+        $this->amountPaid = $current + $increment;
+    }
+
+    public function setDueDays(int $days): void
+    {
+        $this->dueDate = now()->addDays($days)->format('Y-m-d');
+        $this->dispatch('swal-toast', message: "Jatuh tempo diatur ke {$days} hari ke depan.", icon: 'info');
+    }
+
     // Payment Processing
     public function openPaymentModal()
     {
+        $this->processCheckout(app(CheckoutService::class));
+    }
+
+    public function processCheckout(CheckoutService $checkoutService)
+    {
+        $this->errorMessage = null;
+
         if (empty($this->cart)) {
-            $this->errorMessage = 'Keranjang belanja kosong.';
+            $this->errorMessage = 'Keranjang belanja masih kosong.';
             $this->dispatch('swal', title: 'Perhatian', text: $this->errorMessage, icon: 'warning');
 
             return;
         }
 
-        $this->amountPaid = $this->grandTotal;
-        $this->showPaymentModal = true;
-    }
+        $grandTotal = $this->grandTotal;
+        $paid = is_numeric($this->amountPaid) ? (float) $this->amountPaid : 0.0;
 
-    public function processCheckout(CheckoutService $checkoutService)
-    {
+        // If non-cash, default amount paid to grand total
+        if ($this->paymentMethod !== 'cash') {
+            $paid = $grandTotal;
+            $this->amountPaid = $grandTotal;
+        }
+
+        // Validate Cash payment amount
+        if ($this->paymentMethod === 'cash' && $grandTotal > 0 && $paid < $grandTotal) {
+            $kurang = number_format($grandTotal - $paid, 0, ',', '.');
+            $this->errorMessage = 'Jumlah uang diterima (Rp '.number_format($paid, 0, ',', '.').") kurang Rp {$kurang} dari total tagihan.";
+            $this->dispatch('swal', title: 'Uang Pembayaran Kurang', text: $this->errorMessage, icon: 'warning');
+
+            return;
+        }
+
+        // Validate Piutang/Credit customer selection
+        if (in_array($this->paymentMethod, ['receivable', 'credit']) && empty($this->selectedCustomerId)) {
+            $this->errorMessage = 'Untuk pembayaran Piutang / Bon, silakan pilih nama Pelanggan terlebih dahulu agar tercatat di Buku Piutang.';
+            $this->dispatch('swal', title: 'Pelanggan Wajib Dipilih', text: $this->errorMessage, icon: 'warning');
+
+            return;
+        }
+
         $user = Auth::user();
         $storeId = $user->store_id ?? Store::first()?->id ?? 1;
 
@@ -488,7 +574,7 @@ class Checkout extends Component
                 'payments' => [
                     [
                         'payment_method' => $this->paymentMethod,
-                        'amount' => is_numeric($this->amountPaid) ? (float) $this->amountPaid : 0.0,
+                        'amount' => $paid,
                         'reference_number' => $this->referenceNumber,
                     ],
                 ],
@@ -497,11 +583,15 @@ class Checkout extends Component
             $this->lastSale = $sale->load(['items', 'customer', 'cashier', 'payments']);
             $this->cart = [];
             $this->discountTotal = 0;
+            $this->amountPaid = 0;
             $this->selectedCustomerId = null;
+            $this->referenceNumber = '';
+            $this->notes = '';
+            $this->dueDate = null;
             $this->showPaymentModal = false;
             $this->showPrintModal = true;
             $this->successMessage = "Transaksi Invoice {$sale->invoice_number} Sukses!";
-            $this->dispatch('swal', title: 'Transaksi Sukses! 🎉', text: "Invoice {$sale->invoice_number} berhasil diproses.", icon: 'success');
+            $this->dispatch('swal', title: 'Transaksi Sukses! 🎉', text: "Invoice {$sale->invoice_number} senilai Rp ".number_format($sale->grand_total, 0, ',', '.').' berhasil diproses.', icon: 'success');
         } catch (\Throwable $e) {
             $this->errorMessage = $e->getMessage();
             $this->dispatch('swal', title: 'Gagal Memproses Transaksi', text: $this->errorMessage, icon: 'error');

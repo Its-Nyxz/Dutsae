@@ -21,12 +21,8 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
+                <flux:sidebar.item icon="book-open-text" :href="route('guide.index')" wire:navigate>
+                    {{ __('Panduan Sistem') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 
@@ -65,8 +61,11 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('profile.edit')" icon="cog" wire:navigate>
-                            {{ __('Settings') }}
+                        <flux:menu.item :href="route('profile.edit')" icon="user" wire:navigate>
+                            {{ __('Profil Pengguna') }}
+                        </flux:menu.item>
+                        <flux:menu.item :href="route('guide.index')" icon="book-open" wire:navigate>
+                            {{ __('Panduan Sistem') }}
                         </flux:menu.item>
                     </flux:menu.radio.group>
 

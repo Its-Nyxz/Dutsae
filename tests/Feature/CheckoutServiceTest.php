@@ -145,13 +145,13 @@ test('checkout fails when stock is insufficient', function () {
     ], $cashier))->toThrow(InvalidArgumentException::class);
 });
 
-test('checkout validates customer credit limit for receivable payment method', function () {
+test('checkout succeeds with receivable payment method for customer', function () {
     $store = Store::create(['code' => 'ST01', 'name' => 'Toko Utama']);
     $cashier = User::create(['name' => 'Kasir 1', 'email' => 'kasir3@test.com', 'password' => 'secret', 'role' => 'kasir']);
     $customer = Customer::create([
         'store_id' => $store->id,
         'name' => 'Toko Bangunan Sukses',
-        'credit_limit' => 500000, // Limit Rp 500.000
+        'credit_limit' => 500000,
     ]);
 
     $unitPcs = Unit::create(['code' => 'PCS', 'name' => 'Pieces', 'symbol' => 'pcs']);
@@ -163,15 +163,22 @@ test('checkout validates customer credit limit for receivable payment method', f
 
     $checkoutService = new CheckoutService($inventoryService);
 
-    // Buy 10 bags @ 70,000 = 700,000 (exceeds 500,000 limit)
-    expect(fn () => $checkoutService->processCheckout([
+    // Buy 10 bags @ 70,000 = 700,000 via receivable
+    $sale = $checkoutService->processCheckout([
         'store_id' => $store->id,
         'customer_id' => $customer->id,
+        'due_date' => now()->addDays(14)->format('Y-m-d'),
         'items' => [
             ['product_id' => $product->id, 'unit_id' => $unitPcs->id, 'quantity' => 10, 'unit_price' => 70000],
         ],
         'payments' => [
             ['payment_method' => 'receivable', 'amount' => 700000],
         ],
-    ], $cashier))->toThrow(InvalidArgumentException::class);
+    ], $cashier);
+
+    expect($sale)->not->toBeNull();
+    expect($sale->status)->toBe('completed');
+    expect((float) $sale->grand_total)->toBe(700000.0);
+    expect($sale->customer_id)->toBe($customer->id);
+    expect($sale->due_date->format('Y-m-d'))->toBe(now()->addDays(14)->format('Y-m-d'));
 });

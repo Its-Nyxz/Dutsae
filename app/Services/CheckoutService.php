@@ -91,31 +91,9 @@ class CheckoutService
 
             $grandTotal = max(0, $subtotal - $discountTotal);
 
-            // 2. Validate Customer Credit Limit if Paying via Receivable/Credit
+            // 2. Customer validation if paying via receivable/credit
             if ($customerId) {
                 $customer = Customer::find($customerId);
-                if ($customer && (float) $customer->credit_limit > 0) {
-                    $hasReceivablePayment = false;
-                    foreach ($paymentsData as $p) {
-                        if (in_array($p['payment_method'], ['receivable', 'credit'])) {
-                            $hasReceivablePayment = true;
-                            break;
-                        }
-                    }
-
-                    if ($hasReceivablePayment) {
-                        // Check existing unpaid sales total
-                        $unpaidTotal = Sale::where('customer_id', $customer->id)
-                            ->where('status', 'completed')
-                            ->whereHas('payments', function ($q) {
-                                $q->whereIn('payment_method', ['receivable', 'credit']);
-                            })->sum('grand_total');
-
-                        if (($unpaidTotal + $grandTotal) > (float) $customer->credit_limit) {
-                            throw new InvalidArgumentException("Total piutang pelanggan '{$customer->name}' melebihi batas limit (Limit: Rp ".number_format($customer->credit_limit, 0, ',', '.').').');
-                        }
-                    }
-                }
             }
 
             // 3. Generate Invoice Number

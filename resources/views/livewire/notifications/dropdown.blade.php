@@ -22,24 +22,33 @@
         @click.outside="open = false" 
         x-transition
         class="absolute right-0 mt-2 w-88 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden text-slate-900 dark:text-white transition-colors"
+        style="display: none;"
     >
         <div class="p-3.5 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
             <h4 class="font-extrabold text-sm uppercase text-slate-900 dark:text-white tracking-wider">Notifikasi Sistem</h4>
-            <span class="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-md">{{ $unreadCount }} Baru</span>
+            <span class="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold px-2.5 py-0.5 rounded-md">{{ $unreadCount }} Notifikasi</span>
         </div>
 
         <div class="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/60">
             @forelse ($notifications as $n)
-                <div class="p-3.5 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition flex gap-3 text-sm">
-                    <span class="text-xl">
-                        {{ $n['type'] === 'low_stock' ? '⚠️' : '🛒' }}
-                    </span>
-                    <div>
-                        <div class="font-bold text-slate-900 dark:text-white text-sm">{{ $n['title'] }}</div>
-                        <div class="text-slate-600 dark:text-slate-300 text-xs mt-0.5">{{ $n['message'] }}</div>
-                        <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">{{ $n['created_at'] }}</div>
+                <a href="{{ $n['url'] ?? '#' }}" class="p-3.5 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition flex gap-3 text-sm block">
+                    <div class="flex gap-3 items-start">
+                        <span class="text-xl shrink-0">
+                            @if ($n['type'] === 'low_stock')
+                                ⚠️
+                            @elseif ($n['type'] === 'due_receivable')
+                                🚨
+                            @else
+                                🛒
+                            @endif
+                        </span>
+                        <div>
+                            <div class="font-bold text-slate-900 dark:text-white text-sm">{{ $n['title'] }}</div>
+                            <div class="text-slate-600 dark:text-slate-300 text-xs mt-0.5">{{ $n['message'] }}</div>
+                            <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-mono">{{ $n['created_at'] }}</div>
+                        </div>
                     </div>
-                </div>
+                </a>
             @empty
                 <div class="p-5 text-center text-sm text-slate-400 dark:text-slate-500">Tidak ada notifikasi baru.</div>
             @endforelse
