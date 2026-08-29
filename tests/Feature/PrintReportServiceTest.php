@@ -40,7 +40,7 @@ beforeEach(function () {
 
     $this->sale = Sale::create([
         'store_id' => $this->store->id,
-        'user_id' => $this->admin->id,
+        'cashier_id' => $this->admin->id,
         'invoice_number' => 'INV-20260825-9999',
         'subtotal' => 150000,
         'discount_total' => 0,
@@ -52,8 +52,13 @@ beforeEach(function () {
     SaleItem::create([
         'sale_id' => $this->sale->id,
         'product_id' => $this->product->id,
+        'product_code_snapshot' => $this->product->code,
+        'product_name_snapshot' => $this->product->name,
         'unit_id' => $this->unit->id,
+        'unit_name_snapshot' => $this->unit->name,
+        'conversion_factor_snapshot' => 1.0,
         'quantity' => 15,
+        'quantity_base' => 15,
         'unit_price' => 10000,
         'subtotal' => 150000,
     ]);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CustomerPayment;
 use App\Models\Sale;
 use App\Models\Store;
 use Carbon\Carbon;
@@ -52,7 +53,7 @@ class PrintReportController extends Controller
         ]);
     }
 
-    public function receivableReceipt(\App\Models\CustomerPayment $payment)
+    public function receivableReceipt(CustomerPayment $payment)
     {
         $payment->load(['customer', 'receiver', 'store']);
 

@@ -7,7 +7,6 @@ use App\Models\CustomerPayment;
 use App\Models\Sale;
 use App\Models\Store;
 use Illuminate\Support\Facades\Auth;
-
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;

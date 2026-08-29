@@ -1,20 +1,19 @@
 <?php
 
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\PrintController;
+use App\Http\Controllers\PrintReportController;
 use App\Livewire\Customers\Index as CustomerIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Pos\Checkout;
 use App\Livewire\Products\Index as ProductIndex;
 use App\Livewire\Purchases\Create as PurchaseCreate;
+use App\Livewire\Receivables\Index as ReceivableIndex;
 use App\Livewire\Reports\Sales as SalesReport;
 use App\Livewire\Suppliers\Index as SupplierIndex;
 use App\Livewire\Units\Index as UnitIndex;
-use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\PrintController;
-use App\Http\Controllers\PrintReportController;
-use App\Livewire\Receivables\Index as ReceivableIndex;
 use App\Livewire\Users\Index as UserIndex;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('pos');

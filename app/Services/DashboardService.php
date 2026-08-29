@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CustomerPayment;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Sale;
@@ -23,13 +24,20 @@ class DashboardService
     }
 
     /**
-     * Get Uang Masuk Hari Ini (Total actual cash/payments received today).
+     * Get Uang Masuk Hari Ini (Total actual cash/payments received today from sales & customer debt settlements).
      */
     public function getTodayIncomingPayments(int $storeId): float
     {
-        return (float) Payment::where('store_id', $storeId)
+        $salesPayments = (float) Payment::where('store_id', $storeId)
+            ->whereNotIn('payment_method', ['receivable', 'credit'])
             ->whereDate('paid_at', Carbon::today())
             ->sum('amount');
+
+        $customerPayments = (float) CustomerPayment::where('store_id', $storeId)
+            ->whereDate('paid_at', Carbon::today())
+            ->sum('amount');
+
+        return $salesPayments + $customerPayments;
     }
 
     /**

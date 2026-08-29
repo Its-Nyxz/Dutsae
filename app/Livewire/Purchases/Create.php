@@ -3,6 +3,7 @@
 namespace App\Livewire\Purchases;
 
 use App\Models\Product;
+use App\Models\Purchase;
 use App\Models\Store;
 use App\Models\Supplier;
 use App\Models\Unit;
@@ -143,11 +144,11 @@ class Create extends Component
     // Detail Purchase Modal State
     public bool $showDetailModal = false;
 
-    public ?\App\Models\Purchase $selectedPurchase = null;
+    public ?Purchase $selectedPurchase = null;
 
     public function viewDetail(int $purchaseId)
     {
-        $purchase = \App\Models\Purchase::with(['supplier', 'receiver', 'items.product', 'items.unit'])->find($purchaseId);
+        $purchase = Purchase::with(['supplier', 'receiver', 'items.product', 'items.unit'])->find($purchaseId);
 
         if ($purchase) {
             $this->selectedPurchase = $purchase;
@@ -162,7 +163,7 @@ class Create extends Component
         $products = Product::where('store_id', $storeId)->where('is_active', true)->get();
         $units = Unit::all();
 
-        $recentPurchases = \App\Models\Purchase::with(['supplier', 'receiver', 'items.product', 'items.unit'])
+        $recentPurchases = Purchase::with(['supplier', 'receiver', 'items.product', 'items.unit'])
             ->where('store_id', $storeId)
             ->latest('purchased_at')
             ->take(15)

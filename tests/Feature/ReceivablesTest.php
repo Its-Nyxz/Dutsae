@@ -1,10 +1,10 @@
 <?php
 
+use App\Livewire\Receivables\Index;
 use App\Models\Customer;
 use App\Models\CustomerPayment;
 use App\Models\Product;
 use App\Models\Sale;
-use App\Models\SaleItem;
 use App\Models\Store;
 use App\Models\Unit;
 use App\Models\User;
@@ -54,7 +54,7 @@ beforeEach(function () {
     $this->sale = Sale::create([
         'store_id' => $this->store->id,
         'customer_id' => $this->customer->id,
-        'user_id' => $this->admin->id,
+        'cashier_id' => $this->admin->id,
         'invoice_number' => 'INV-20260825-7777',
         'subtotal' => 650000,
         'discount_total' => 0,
@@ -83,7 +83,7 @@ it('renders receivables ledger page with customer outstanding credit balance', f
 
 it('can process customer credit settlement payment via livewire', function () {
     Livewire::actingAs($this->admin)
-        ->test(App\Livewire\Receivables\Index::class)
+        ->test(Index::class)
         ->call('openPaymentModal', $this->customer->id)
         ->set('amount', 500000)
         ->set('paymentMethod', 'cash')

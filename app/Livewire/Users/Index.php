@@ -13,18 +13,25 @@ class Index extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $roleFilter = '';
 
     // Modal state
     public bool $showCreateModal = false;
+
     public bool $showEditModal = false;
+
     public ?int $editingUserId = null;
 
     // Form fields
     public string $name = '';
+
     public string $email = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
+
     public string $role = 'kasir';
 
     protected function rules(): array
@@ -108,7 +115,7 @@ class Index extends Component
             'role' => $this->role,
         ];
 
-        if (!empty($this->password)) {
+        if (! empty($this->password)) {
             $data['password'] = Hash::make($this->password);
         }
 
@@ -123,6 +130,7 @@ class Index extends Component
     {
         if (Auth::id() === $userId) {
             $this->dispatch('swal', title: 'Gagal Hapus', text: 'Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif!', icon: 'error');
+
             return;
         }
 
@@ -139,7 +147,7 @@ class Index extends Component
         if ($this->search) {
             $query->where(function ($q) {
                 $q->where('name', 'like', '%'.$this->search.'%')
-                  ->orWhere('email', 'like', '%'.$this->search.'%');
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             });
         }
 

@@ -25,6 +25,13 @@ class Sale extends Model
         'sold_at',
     ];
 
+    protected $appends = [
+        'paid_amount',
+        'outstanding_amount',
+        'payment_status',
+        'total_amount',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -59,5 +66,44 @@ class Sale extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function getPaidAmountAttribute(): float
+    {
+        if ($this->relationLoaded('payments')) {
+            return (float) $this->payments
+                ->whereNotIn('payment_method', ['receivable', 'credit'])
+                ->sum('amount');
+        }
+
+        return (float) $this->payments()
+            ->whereNotIn('payment_method', ['receivable', 'credit'])
+            ->sum('amount');
+    }
+
+    public function getOutstandingAmountAttribute(): float
+    {
+        return max(0.0, (float) $this->grand_total - $this->paid_amount);
+    }
+
+    public function getPaymentStatusAttribute(): string
+    {
+        $grand = (float) $this->grand_total;
+        $paid = $this->paid_amount;
+
+        if ($grand <= 0 || $paid >= $grand) {
+            return 'paid';
+        }
+
+        if ($paid > 0) {
+            return 'partial';
+        }
+
+        return 'unpaid';
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        return (float) $this->subtotal;
     }
 }

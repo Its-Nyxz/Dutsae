@@ -37,7 +37,7 @@ beforeEach(function () {
 it('prevents non-admin users from accessing user management page', function () {
     $this->actingAs($this->kasir)
         ->get(route('users.index'))
-        ->assertForbidden();
+        ->assertRedirect(route('pos'));
 });
 
 it('allows admin users to view user management page', function () {
