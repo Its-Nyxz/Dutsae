@@ -89,7 +89,8 @@ class CheckoutService
                 ];
             }
 
-            $grandTotal = max(0, $subtotal - $discountTotal);
+            $shippingCost = (float) ($data['shipping_cost'] ?? 0);
+            $grandTotal = max(0, $subtotal - $discountTotal + $shippingCost);
 
             // 2. Customer validation if paying via receivable/credit
             if ($customerId) {
@@ -108,6 +109,7 @@ class CheckoutService
                 'status' => $status,
                 'subtotal' => $subtotal,
                 'discount_total' => $discountTotal,
+                'shipping_cost' => $shippingCost,
                 'grand_total' => $grandTotal,
                 'due_date' => $data['due_date'] ?? null,
                 'notes' => $data['notes'] ?? null,

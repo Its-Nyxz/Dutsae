@@ -117,6 +117,12 @@
                     <td class="text-right">- Rp {{ number_format($sale->discount_total, 0, ',', '.') }}</td>
                 </tr>
             @endif
+            @if ($sale->shipping_cost > 0)
+                <tr>
+                    <td>Ongkir Armada</td>
+                    <td class="text-right">+ Rp {{ number_format($sale->shipping_cost, 0, ',', '.') }}</td>
+                </tr>
+            @endif
             <tr class="font-bold" style="font-size: 15px;">
                 <td>TOTAL</td>
                 <td class="text-right">Rp {{ number_format($sale->grand_total, 0, ',', '.') }}</td>

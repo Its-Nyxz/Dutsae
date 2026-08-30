@@ -65,6 +65,11 @@
                             Kasir POS
                         </a>
 
+                        <!-- Retur Penjualan -->
+                        <a href="{{ route('returns.index') }}" class="px-3 py-2 rounded-xl text-xs xl:text-sm font-extrabold transition {{ request()->routeIs('returns.*') ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                            Retur Barang
+                        </a>
+
                         <!-- Buku Piutang Pelanggan -->
                         <a href="{{ route('receivables.index') }}" class="px-3 py-2 rounded-xl text-xs xl:text-sm font-extrabold transition {{ request()->routeIs('receivables.*') ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                             Buku Piutang
@@ -77,6 +82,9 @@
                             </a>
                             <a href="{{ route('purchases.create') }}" class="px-3 py-2 rounded-xl text-xs xl:text-sm font-extrabold transition {{ request()->routeIs('purchases.create') ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                                 Barang Masuk
+                            </a>
+                            <a href="{{ route('inventory.adjustment') }}" class="px-3 py-2 rounded-xl text-xs xl:text-sm font-extrabold transition {{ request()->routeIs('inventory.adjustment') ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                                Stok Opname
                             </a>
                             <a href="{{ route('reports.sales') }}" class="px-3 py-2 rounded-xl text-xs xl:text-sm font-extrabold transition {{ request()->routeIs('reports.sales') ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                                 Laporan Omzet
@@ -215,6 +223,9 @@
                 <a href="{{ route('pos') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('pos') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                     🛒 Kasir POS
                 </a>
+                <a href="{{ route('returns.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('returns.*') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                    🔄 Retur Penjualan
+                </a>
                 <a href="{{ route('receivables.index') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('receivables.*') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                     💳 Buku Piutang Pelanggan
                 </a>
@@ -228,6 +239,9 @@
                     </a>
                     <a href="{{ route('purchases.create') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('purchases.create') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                         📥 Barang Masuk (Supplier)
+                    </a>
+                    <a href="{{ route('inventory.adjustment') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('inventory.adjustment') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
+                        📦 Penyesuaian Stok (Opname)
                     </a>
                     <a href="{{ route('reports.sales') }}" class="block px-4 py-2.5 rounded-xl font-bold text-sm transition {{ request()->routeIs('reports.sales') ? 'bg-amber-500 text-slate-950' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700' }}">
                         📈 Laporan Omzet

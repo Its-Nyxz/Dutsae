@@ -19,6 +19,7 @@ class Sale extends Model
         'status',
         'subtotal',
         'discount_total',
+        'shipping_cost',
         'grand_total',
         'due_date',
         'notes',
@@ -37,6 +38,7 @@ class Sale extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount_total' => 'decimal:2',
+            'shipping_cost' => 'decimal:2',
             'grand_total' => 'decimal:2',
             'due_date' => 'date',
             'sold_at' => 'datetime',
@@ -66,6 +68,11 @@ class Sale extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function salesReturns(): HasMany
+    {
+        return $this->hasMany(SalesReturn::class);
     }
 
     public function getPaidAmountAttribute(): float

@@ -50,9 +50,8 @@
             <div>
                 <x-ui.date-picker label="SAMPAI TANGGAL" wire:model.live="endDate" />
             </div>
-            
-            <!-- Alpine Custom Dropdown: METODE PEMBAYARAN -->
-            <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                 <!-- Alpine Custom Dropdown: METODE PEMBAYARAN -->
+            <div class="relative" x-data="{ open: false }" :class="{ 'z-50': open, 'z-10': !open }" @click.outside="open = false" @keydown.escape.window="open = false">
                 <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">METODE PEMBAYARAN</label>
                 <button 
                     type="button" 
@@ -61,7 +60,7 @@
                 >
                     <span class="truncate">
                         @if ($paymentMethod === 'cash')
-                            💵 Tunai / Cash
+                            💵 Tunai (Cash)
                         @elseif ($paymentMethod === 'qris')
                             📱 QRIS
                         @elseif ($paymentMethod === 'bank_transfer')
@@ -119,7 +118,7 @@
             </div>
 
             <!-- Alpine Custom Dropdown: STATUS PEMBAYARAN -->
-            <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+            <div class="relative" x-data="{ open: false }" :class="{ 'z-50': open, 'z-10': !open }" @click.outside="open = false" @keydown.escape.window="open = false">
                 <label class="block text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">STATUS PEMBAYARAN</label>
                 <button 
                     type="button" 

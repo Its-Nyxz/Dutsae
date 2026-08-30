@@ -10,6 +10,9 @@
             } else if (e.key === 'F9') {
                 e.preventDefault();
                 $wire.processCheckout();
+            } else if (e.key === 'F10') {
+                e.preventDefault();
+                $wire.reprintLastReceipt();
             }
         });
     }
@@ -30,6 +33,14 @@
             <span class="bg-slate-200 dark:bg-slate-700 text-amber-700 dark:text-amber-400 px-3 py-1.5 rounded-lg font-mono font-bold">[F2] Cari</span>
             <span class="bg-slate-200 dark:bg-slate-700 text-sky-700 dark:text-sky-400 px-3 py-1.5 rounded-lg font-mono font-bold">[F6] Hold</span>
             <span class="bg-slate-200 dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-lg font-mono font-bold">[F9] Bayar</span>
+            <button 
+                type="button" 
+                wire:click="reprintLastReceipt" 
+                class="bg-slate-200 dark:bg-slate-700 hover:bg-purple-500/20 text-purple-700 dark:text-purple-400 px-3 py-1.5 rounded-lg font-mono font-bold cursor-pointer transition flex items-center gap-1"
+                title="Cetak Ulang Transaksi Terakhir (F10)"
+            >
+                [F10] 🖨️ Cetak Ulang
+            </button>
         </div>
     </header>
 
@@ -171,7 +182,7 @@
                                             step="0.01"
                                             wire:change="updateCartQuantity({{ $index }}, $event.target.value)"
                                             value="{{ $item['quantity'] }}"
-                                            class="w-24 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-center font-black rounded-lg py-1.5 text-base focus:border-amber-500 outline-none"
+                                            class="w-24 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-center font-black rounded-lg py-1.5 text-base focus:border-amber-500 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         >
                                     </td>
                                     <td class="p-3.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400 text-base">
@@ -311,10 +322,38 @@
                 @endif
             </div>
 
-            <!-- Direct Integrated Checkout & Payment Card -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border-2 border-amber-500/50 shadow-xl space-y-4 transition-colors">
+            <!-- Direct Integrated Checkout & Payment Card (Alpine Reactive for Zero Lag) -->
+            <div 
+                x-data="{
+                    subtotal: {{ (float) $this->subtotal }},
+                    discount: @entangle('discountTotal').live,
+                    shipping: @entangle('shippingCost').live,
+                    amountPaid: @entangle('amountPaid').live,
+                    get grandTotal() {
+                        let s = parseFloat(this.subtotal) || 0;
+                        let d = parseFloat(this.discount) || 0;
+                        let sh = parseFloat(this.shipping) || 0;
+                        return Math.max(0, s - d + sh);
+                    },
+                    get change() {
+                        let p = parseFloat(this.amountPaid) || 0;
+                        let g = this.grandTotal;
+                        return Math.max(0, p - g);
+                    },
+                    get deficit() {
+                        let p = parseFloat(this.amountPaid) || 0;
+                        let g = this.grandTotal;
+                        return Math.max(0, g - p);
+                    },
+                    formatRupiah(val) {
+                        return new Intl.NumberFormat('id-ID').format(Math.round(val || 0));
+                    }
+                }"
+                x-effect="subtotal = {{ (float) $this->subtotal }}"
+                class="bg-white dark:bg-slate-800 rounded-2xl p-5 border-2 border-amber-500/50 shadow-xl space-y-4 transition-colors"
+            >
                 
-                <!-- Subtotal & Diskon -->
+                <!-- Subtotal, Diskon & Ongkos Kirim -->
                 <div class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                     <div class="flex justify-between items-center">
                         <span class="font-medium">Subtotal Barang:</span>
@@ -326,8 +365,22 @@
                             <span class="absolute left-2.5 text-xs text-slate-400 font-mono">Rp</span>
                             <input 
                                 type="number" 
-                                wire:model.live.debounce.200ms="discountTotal"
-                                class="w-32 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-right text-amber-600 dark:text-amber-400 font-mono font-bold rounded-lg pl-7 pr-3 py-1.5 text-sm outline-none focus:border-amber-500"
+                                x-model.number="discount"
+                                wire:model.live.debounce.400ms="discountTotal"
+                                class="w-32 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-right text-amber-600 dark:text-amber-400 font-mono font-bold rounded-lg pl-7 pr-3 py-1.5 text-sm outline-none focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                placeholder="0"
+                            >
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium flex items-center gap-1">🚚 Ongkir (Armada):</span>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-2.5 text-xs text-slate-400 font-mono">Rp</span>
+                            <input 
+                                type="number" 
+                                x-model.number="shipping"
+                                wire:model.live.debounce.400ms="shippingCost"
+                                class="w-32 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-right text-emerald-600 dark:text-emerald-400 font-mono font-bold rounded-lg pl-7 pr-3 py-1.5 text-sm outline-none focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 placeholder="0"
                             >
                         </div>
@@ -341,7 +394,7 @@
                         <span class="text-xs text-slate-500 dark:text-slate-400">{{ count($cart) }} barang di keranjang</span>
                     </div>
                     <div class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400 font-mono">
-                        Rp {{ number_format($this->grandTotal, 0, ',', '.') }}
+                        Rp <span x-text="formatRupiah(grandTotal)">{{ number_format($this->grandTotal, 0, ',', '.') }}</span>
                     </div>
                 </div>
 
@@ -375,7 +428,7 @@
                             <label class="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Uang Diterima</label>
                             <button 
                                 type="button" 
-                                wire:click="setExactAmount"
+                                @click="amountPaid = grandTotal; $wire.set('amountPaid', grandTotal)"
                                 class="text-xs font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded-md border border-amber-500/30 transition cursor-pointer"
                             >
                                 ⚡ Uang Pas
@@ -387,9 +440,10 @@
                             <span class="absolute left-3.5 text-emerald-600 dark:text-emerald-400 font-mono text-xl font-black select-none">Rp</span>
                             <input 
                                 type="number" 
-                                wire:model.live.debounce.150ms="amountPaid" 
+                                x-model.number="amountPaid"
+                                wire:model.live.debounce.400ms="amountPaid" 
                                 placeholder="0"
-                                class="w-full bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 focus:border-emerald-500 text-emerald-600 dark:text-emerald-400 text-2xl font-black font-mono rounded-xl py-2.5 pl-12 pr-4 outline-none shadow-inner"
+                                class="w-full bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 focus:border-emerald-500 text-emerald-600 dark:text-emerald-400 text-2xl font-black font-mono rounded-xl py-2.5 pl-12 pr-4 outline-none shadow-inner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             >
                         </div>
 
@@ -398,7 +452,7 @@
                             @foreach ([20000 => '20rb', 50000 => '50rb', 100000 => '100rb', 200000 => '200rb'] as $amt => $lbl)
                                 <button 
                                     type="button" 
-                                    wire:click="setPresetAmount({{ $amt }})"
+                                    @click="amountPaid = {{ $amt }}; $wire.set('amountPaid', {{ $amt }})"
                                     class="bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 py-1.5 rounded-lg text-xs font-bold font-mono transition cursor-pointer shadow-sm"
                                 >
                                     {{ $lbl }}
@@ -406,23 +460,22 @@
                             @endforeach
                         </div>
 
-                        <!-- Real-time Kembalian / Kurang Bayar -->
-                        @php
-                            $paidVal = (float) $amountPaid;
-                            $grandVal = (float) $this->grandTotal;
-                        @endphp
-
-                        @if ($paidVal >= $grandVal && $grandVal > 0)
-                            <div class="bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-xl flex justify-between items-center text-emerald-700 dark:text-emerald-300">
-                                <span class="text-xs font-black uppercase">Kembalian:</span>
-                                <span class="text-xl font-black font-mono">Rp {{ number_format($this->changeAmount, 0, ',', '.') }}</span>
-                            </div>
-                        @elseif ($paidVal > 0 && $paidVal < $grandVal)
-                            <div class="bg-red-500/10 border border-red-500/30 p-2.5 rounded-xl flex justify-between items-center text-red-600 dark:text-red-400 text-xs font-bold">
-                                <span>Kurang Bayar:</span>
-                                <span class="font-mono font-black text-sm">Rp {{ number_format($grandVal - $paidVal, 0, ',', '.') }}</span>
-                            </div>
-                        @endif
+                        <!-- Real-time Kembalian / Kurang Bayar (Instant Client Computation) -->
+                        <div 
+                            x-show="parseFloat(amountPaid) >= grandTotal && grandTotal > 0" 
+                            class="bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-xl flex justify-between items-center text-emerald-700 dark:text-emerald-300"
+                        >
+                            <span class="text-xs font-black uppercase">Kembalian:</span>
+                            <span class="text-xl font-black font-mono">Rp <span x-text="formatRupiah(change)">{{ number_format($this->changeAmount, 0, ',', '.') }}</span></span>
+                        </div>
+                        
+                        <div 
+                            x-show="parseFloat(amountPaid) > 0 && parseFloat(amountPaid) < grandTotal" 
+                            class="bg-red-500/10 border border-red-500/30 p-2.5 rounded-xl flex justify-between items-center text-red-600 dark:text-red-400 text-xs font-bold"
+                        >
+                            <span>Kurang Bayar:</span>
+                            <span class="font-mono font-black text-sm">Rp <span x-text="formatRupiah(deficit)"></span></span>
+                        </div>
                     </div>
                 @endif
 
@@ -551,7 +604,7 @@
                     <button wire:click="$set('showQuickCreateModal', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl sm:text-3xl font-bold transition">&times;</button>
                 </div>
 
-                <div class="space-y-4 sm:space-y-5 text-sm sm:text-base overflow-y-auto pr-1">
+                <div class="space-y-4 sm:space-y-5 text-sm sm:text-base overflow-y-auto pr-1 min-h-[360px] pb-28">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Kode Barang (Manual)</label>
@@ -715,6 +768,69 @@
                             <input type="number" wire:model="quickMinStock" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl p-2.5 sm:p-3 text-sm sm:text-base outline-none">
                         </div>
                     </div>
+
+                    <!-- Multi-Satuan Konversi Section -->
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-3.5 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <label class="font-extrabold text-amber-600 dark:text-amber-400 text-xs sm:text-sm">🔄 Satuan Konversi Tambahan (Misal: Batang / Dus / Ikat)</label>
+                            <button type="button" wire:click="addQuickAdditionalUnitRow" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-900 dark:text-white font-bold px-3.5 py-1.5 rounded-xl text-xs cursor-pointer transition">
+                                + Tambah Satuan Lain
+                            </button>
+                        </div>
+
+                        @forelse ($quickAdditionalUnits as $idx => $row)
+                            <div class="bg-slate-100 dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 grid grid-cols-12 gap-2.5 sm:gap-3 items-center">
+                                <div class="col-span-12 sm:col-span-4 relative" x-data="{ openUnitRow: false }" :class="{ 'z-[999]': openUnitRow }">
+                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Satuan</label>
+                                    <button 
+                                        type="button" 
+                                        @click="openUnitRow = !openUnitRow" 
+                                        class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-2 text-xs sm:text-sm font-bold focus:border-amber-500 outline-none flex justify-between items-center cursor-pointer shadow-sm"
+                                    >
+                                        @php $curUnit = $units->firstWhere('id', $row['unit_id']); @endphp
+                                        <span>{{ $curUnit?->name ?? '-- Pilih Satuan --' }}</span>
+                                        <span class="text-xs text-slate-400">▼</span>
+                                    </button>
+
+                                    <div 
+                                        x-show="openUnitRow" 
+                                        @click.outside="openUnitRow = false" 
+                                        x-transition
+                                        class="absolute z-[9999] left-0 right-0 bottom-full mb-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700/50"
+                                        style="display: none;"
+                                    >
+                                        @foreach ($units as $u)
+                                            <div 
+                                                @click="$wire.set('quickAdditionalUnits.{{ $idx }}.unit_id', {{ $u->id }}); openUnitRow = false"
+                                                class="px-3 py-2 hover:bg-amber-500/10 hover:text-amber-600 dark:hover:text-amber-400 cursor-pointer text-xs font-bold transition flex items-center justify-between {{ $row['unit_id'] == $u->id ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400 font-extrabold' : 'text-slate-800 dark:text-slate-200' }}"
+                                            >
+                                                <span>{{ $u->name }} ({{ $u->symbol }})</span>
+                                                @if ($row['unit_id'] == $u->id)
+                                                    <span class="text-amber-500 text-xs">✓</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="col-span-6 sm:col-span-4">
+                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Faktor Konversi (x Base)</label>
+                                    <input type="number" step="0.01" wire:model="quickAdditionalUnits.{{ $idx }}.conversion_factor" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-amber-600 dark:text-amber-400 font-mono font-bold rounded-lg p-2 text-xs sm:text-sm outline-none">
+                                </div>
+                                <div class="col-span-5 sm:col-span-3">
+                                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Harga Jual</label>
+                                    <div class="relative flex items-center">
+                                        <span class="absolute left-2 text-amber-600 dark:text-amber-400 font-mono text-xs font-bold select-none">Rp</span>
+                                        <input type="number" wire:model="quickAdditionalUnits.{{ $idx }}.selling_price" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-mono font-bold rounded-lg p-2 pl-7 pr-6 text-xs sm:text-sm outline-none">
+                                    </div>
+                                </div>
+                                <div class="col-span-1 text-center">
+                                    <button type="button" wire:click="removeQuickAdditionalUnitRow({{ $idx }})" class="text-red-500 hover:text-red-700 font-bold text-lg cursor-pointer">&times;</button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-xs sm:text-sm text-slate-500 italic">Belum ada satuan konversi tambahan. Klik tombol di atas jika produk ini dijual dalam bentuk Batang, Dus, atau Ikat.</p>
+                        @endforelse
+                    </div>
                 </div>
 
                 <div class="flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-4 pt-3.5 border-t border-slate-200 dark:border-slate-700 shrink-0">
@@ -817,14 +933,29 @@
                         <p>Tanggal: {{ $lastSale->sold_at->format('d/m/Y H:i') }}</p>
                         <p>Pelanggan: {{ $lastSale->customer?->name ?? 'Umum' }}</p>
                         <p class="font-bold text-emerald-600 dark:text-emerald-400">Total: Rp {{ number_format($lastSale->grand_total, 0, ',', '.') }}</p>
+                        @if ($lastSale->shipping_cost > 0)
+                            <p class="text-xs text-sky-600 dark:text-sky-400">Termasuk Ongkir: Rp {{ number_format($lastSale->shipping_cost, 0, ',', '.') }}</p>
+                        @endif
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-1">
-                        <a href="{{ route('print.receipt', $lastSale->id) }}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 sm:py-4 rounded-2xl text-sm sm:text-base cursor-pointer shadow-md text-center block transition">
+                        <a href="{{ route('print.receipt', $lastSale->id) }}" target="_blank" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 sm:py-3.5 rounded-2xl text-sm sm:text-base cursor-pointer shadow-md text-center block transition">
                             🖨️ Cetak Struk Kasir (PDF)
                         </a>
-                        <a href="{{ route('print.surat-jalan', $lastSale->id) }}" target="_blank" class="bg-sky-600 hover:bg-sky-500 text-white font-black py-3 sm:py-4 rounded-2xl text-sm sm:text-base cursor-pointer shadow-md text-center block transition">
+                        <a href="{{ route('print.surat-jalan', $lastSale->id) }}" target="_blank" class="bg-sky-600 hover:bg-sky-500 text-white font-black py-3 sm:py-3.5 rounded-2xl text-sm sm:text-base cursor-pointer shadow-md text-center block transition">
                             🚛 Cetak Surat Jalan (PDF)
+                        </a>
+                    </div>
+
+                    <!-- Direct WhatsApp Share Button -->
+                    <div>
+                        <a 
+                            href="{{ $this->whatsAppUrl }}" 
+                            target="_blank" 
+                            class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 sm:py-3.5 rounded-2xl text-sm sm:text-base cursor-pointer shadow-md text-center flex items-center justify-center gap-2 transition"
+                        >
+                            <span>📱</span>
+                            <span>Kirim Nota ke WhatsApp Pelanggan</span>
                         </a>
                     </div>
                 </div>

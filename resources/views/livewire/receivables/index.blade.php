@@ -76,10 +76,35 @@
                             </td>
                             <td class="p-3.5 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    @if ($out > 0)
+                                    @if ($c->outstanding_receivable > 0)
                                         <button wire:click="openPaymentModal({{ $c->id }})" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-black shadow-sm transition cursor-pointer">
                                             💳 Lunasi Bon
                                         </button>
+                                        @php
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $c->phone ?? '');
+                                            if (str_starts_with($cleanPhone, '0')) {
+                                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                                            }
+                                            $waText = "*TOKO DUTA SAE*\n"
+                                                . "_Pemberitahuan Tagihan Piutang (Bon)_\n"
+                                                . "--------------------------------\n"
+                                                . "Yth. Bapak/Ibu *{$c->name}*,\n"
+                                                . "Total Sisa Tagihan Piutang: *Rp " . number_format($c->outstanding_receivable, 0, ',', '.') . "*\n"
+                                                . "--------------------------------\n"
+                                                . "Mohon untuk melakukan konfirmasi atau pembayaran pelunasan ke Toko Duta Sae. Terima kasih! 🙏";
+                                            $waUrl = 'https://api.whatsapp.com/send?' . http_build_query([
+                                                'phone' => $cleanPhone,
+                                                'text' => $waText,
+                                            ]);
+                                        @endphp
+                                        <a 
+                                            href="{{ $waUrl }}" 
+                                            target="_blank" 
+                                            class="bg-emerald-500/10 hover:bg-emerald-500 hover:text-slate-950 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                            title="Kirim Pengingat Tagihan via WhatsApp"
+                                        >
+                                            📱 Tagih WA
+                                        </a>
                                     @endif
                                     <button wire:click="viewLedger({{ $c->id }})" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
                                         📖 Kartu Piutang
@@ -100,8 +125,8 @@
     <!-- Pelunasan / Cicilan Payment Modal -->
     @if ($showPaymentModal && $selectedCustomerId)
         @php $modalCust = $customers->firstWhere('id', $selectedCustomerId); @endphp
-        <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6">
-            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl max-w-lg w-full p-8 shadow-2xl space-y-6 text-slate-900 dark:text-white max-h-[92vh] overflow-hidden">
+        <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl max-w-lg w-full p-8 shadow-2xl space-y-6 text-slate-900 dark:text-white max-h-[94vh] my-auto">
                 <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-4">
                     <h3 class="font-black text-2xl">Pembayaran Piutang (Bon)</h3>
                     <button wire:click="closeModal" class="text-slate-400 hover:text-white text-3xl font-bold transition">&times;</button>
@@ -120,7 +145,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 text-base">
+                <div class="space-y-4 text-base min-h-[220px] pb-6">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Nominal Pembayaran (Rp)</label>
                         <div class="relative flex items-center">
@@ -128,7 +153,7 @@
                             <input 
                                 type="number" 
                                 wire:model="amount" 
-                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-bold font-mono text-xl rounded-xl py-3 pl-12 pr-4 outline-none focus:border-amber-500"
+                                class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-emerald-600 dark:text-emerald-400 font-bold font-mono text-xl rounded-xl py-3 pl-12 pr-4 outline-none focus:border-amber-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 placeholder="0"
                             >
                         </div>

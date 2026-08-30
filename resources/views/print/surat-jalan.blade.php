@@ -162,6 +162,12 @@
                 <p><strong>No. Faktur:</strong> {{ $sale->invoice_number }}</p>
                 <p><strong>Tanggal Faktur:</strong> {{ $sale->sold_at->format('d/m/Y H:i') }}</p>
                 <p><strong>Status Bayar:</strong> {{ strtoupper($sale->status) }}</p>
+                @if ($sale->shipping_cost > 0)
+                    <p><strong>Ongkir Armada:</strong> Rp {{ number_format($sale->shipping_cost, 0, ',', '.') }}</p>
+                @endif
+                @if ($sale->notes)
+                    <p><strong>Catatan:</strong> {{ $sale->notes }}</p>
+                @endif
             </div>
         </div>
 
@@ -171,7 +177,7 @@
                 <tr>
                     <th style="width: 40px; text-align: center;">No</th>
                     <th style="width: 100px;">Kode</th>
-                    <th>Nama Barang / Deskripsi</th>
+                    <th>Nama Barang & Lokasi Rak</th>
                     <th style="width: 120px; text-align: center;">Jumlah (Qty)</th>
                     <th style="width: 100px; text-align: center;">Satuan</th>
                 </tr>
@@ -181,7 +187,12 @@
                     <tr>
                         <td style="text-align: center;">{{ $index + 1 }}</td>
                         <td style="font-family: monospace; font-weight: bold;">{{ $item->product?->code ?? '-' }}</td>
-                        <td><strong>{{ $item->product?->name ?? 'Produk' }}</strong></td>
+                        <td>
+                            <strong>{{ $item->product?->name ?? 'Produk' }}</strong>
+                            @if ($item->product?->location)
+                                <span style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; font-weight: bold;">📍 {{ $item->product->location->name }}</span>
+                            @endif
+                        </td>
                         <td style="text-align: center; font-weight: bold; font-size: 14px;">{{ number_format($item->quantity, 0, ',', '.') }}</td>
                         <td style="text-align: center; font-weight: bold;">{{ $item->unit?->name ?? '-' }}</td>
                     </tr>

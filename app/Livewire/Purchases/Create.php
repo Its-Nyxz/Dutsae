@@ -57,6 +57,9 @@ class Create extends Component
 
     public float $quickProductMinStock = 5;
 
+    // Additional Conversion Units for Quick Create
+    public array $quickAdditionalUnits = [];
+
     // Inline Create Location Form State
     public bool $showInlineLocationForm = false;
 
@@ -161,7 +164,23 @@ class Create extends Component
 
         $this->showInlineUnitForm = false;
         $this->showInlineLocationForm = false;
+        $this->quickAdditionalUnits = [];
         $this->showQuickProductModal = true;
+    }
+
+    public function addQuickAdditionalUnitRow(): void
+    {
+        $secondUnit = Unit::where('id', '!=', $this->quickProductUnitId)->first();
+        $this->quickAdditionalUnits[] = [
+            'unit_id' => $secondUnit?->id,
+            'conversion_factor' => 12.0,
+            'selling_price' => 0.0,
+        ];
+    }
+
+    public function removeQuickAdditionalUnitRow(int $index): void
+    {
+        array_splice($this->quickAdditionalUnits, $index, 1);
     }
 
     public function createInlineLocation(): void
@@ -257,6 +276,7 @@ class Create extends Component
                 'base_selling_price' => (float) $this->quickProductSellPrice,
                 'minimum_stock_base' => (float) $this->quickProductMinStock,
                 'initial_stock' => 0, // Stock will be added by receiving this purchase order
+                'additional_units' => $this->quickAdditionalUnits,
             ], $user->id);
 
             // Assign created product to target item row or new row
@@ -281,6 +301,7 @@ class Create extends Component
             }
 
             $this->showQuickProductModal = false;
+            $this->quickAdditionalUnits = [];
             $msg = "Produk '{$product->name}' berhasil dibuat dan dimasukkan ke daftar barang masuk!";
             $this->dispatch('swal-toast', message: $msg, icon: 'success');
         } catch (\Throwable $e) {

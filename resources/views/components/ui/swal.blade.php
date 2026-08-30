@@ -4,35 +4,27 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Helper function for Swal Popup Alert
-            window.showSwalAlert = function(title, text, icon = 'success') {
-                Swal.fire({
-                    title: title,
-                    text: text,
-                    icon: icon,
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#f59e0b',
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#0f172a',
-                    customClass: {
-                        popup: 'rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl font-sans'
-                    }
-                });
-            };
-
-            // Helper function for Swal Toast Notification
+            // Helper function for Swal Toast Notification (Top-Center, Compact, Won't overlap modals)
             window.showSwalToast = function(message, icon = 'success') {
+                const isDark = document.documentElement.classList.contains('dark');
+                
                 const Toast = Swal.mixin({
                     toast: true,
-                    position: 'top-end',
+                    position: 'top', // Di atas tengah layar
                     showConfirmButton: false,
                     timer: 3000,
                     timerProgressBar: true,
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#0f172a',
+                    background: isDark ? '#1e293b' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a',
+                    customClass: {
+                        container: '!z-[999999]',
+                        popup: 'rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl py-2.5 px-5 text-xs sm:text-sm font-bold font-sans !top-4 !m-0 !w-auto max-w-md backdrop-blur-md',
+                        title: '!text-xs sm:!text-sm !font-bold !m-0 !p-0',
+                        timerProgressBar: '!bg-amber-500'
+                    },
                     didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
                     }
                 });
 
@@ -42,8 +34,20 @@
                 });
             };
 
-            // Helper function for Swal Confirmation Dialog
+            // Helper function for Swal Alert (Routed to Top-Center compact toast so it never covers modals)
+            window.showSwalAlert = function(title, text, icon = 'info') {
+                let msg = '';
+                if (title && text && title !== text) {
+                    msg = title + ': ' + text;
+                } else {
+                    msg = title || text || '';
+                }
+                showSwalToast(msg, icon);
+            };
+
+            // Helper function for Swal Confirmation Dialog (Only for critical deletions with confirm/cancel buttons)
             window.confirmSwal = function(title, text, confirmCallback) {
+                const isDark = document.documentElement.classList.contains('dark');
                 Swal.fire({
                     title: title || 'Konfirmasi Hapus',
                     text: text || 'Apakah Anda yakin ingin menghapus data ini?',
@@ -51,12 +55,16 @@
                     showCancelButton: true,
                     confirmButtonColor: '#ef4444',
                     cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Ya, Hapus Data!',
+                    confirmButtonText: 'Ya, Lanjutkan!',
                     cancelButtonText: 'Batal',
-                    background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    color: document.documentElement.classList.contains('dark') ? '#ffffff' : '#0f172a',
+                    background: isDark ? '#1e293b' : '#ffffff',
+                    color: isDark ? '#ffffff' : '#0f172a',
                     customClass: {
-                        popup: 'rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl font-sans'
+                        container: '!z-[999999]',
+                        popup: 'rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl font-sans max-w-sm p-6',
+                        title: '!text-lg !font-black',
+                        confirmButton: 'rounded-xl font-bold px-5 py-2.5 cursor-pointer',
+                        cancelButton: 'rounded-xl font-bold px-5 py-2.5 cursor-pointer'
                     }
                 }).then((result) => {
                     if (result.isConfirmed && typeof confirmCallback === 'function') {
@@ -71,13 +79,24 @@
             @endif
 
             @if (session('error'))
-                showSwalAlert('⚠️ Perhatian', @js(session('error')), 'error');
+                showSwalToast(@js(session('error')), 'error');
+            @endif
+
+            @if (session('warning'))
+                showSwalToast(@js(session('warning')), 'warning');
+            @endif
+
+            @if (session('info'))
+                showSwalToast(@js(session('info')), 'info');
             @endif
 
             // Livewire Event Listeners
             window.addEventListener('swal', event => {
                 const data = event.detail[0] || event.detail;
-                showSwalAlert(data.title || 'Informasi', data.text || data.message || '', data.icon || 'info');
+                const text = data.text || data.message || '';
+                const title = data.title ? data.title : '';
+                const fullMsg = (title && text && title !== text) ? `${title}: ${text}` : (title || text || '');
+                showSwalToast(fullMsg, data.icon || 'info');
             });
 
             window.addEventListener('swal-toast', event => {

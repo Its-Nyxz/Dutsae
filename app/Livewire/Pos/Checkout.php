@@ -29,7 +29,11 @@ class Checkout extends Component
 
     public ?int $selectedCustomerId = null;
 
-    public $discountTotal = 0;
+    public float|string $discountTotal = 0;
+
+    public float|string $shippingCost = 0;
+
+    public float|string $amountPaid = 0;
 
     public string $notes = '';
 
@@ -39,8 +43,6 @@ class Checkout extends Component
     public bool $showPaymentModal = false;
 
     public string $paymentMethod = 'cash';
-
-    public $amountPaid = 0;
 
     public string $referenceNumber = '';
 
@@ -60,6 +62,9 @@ class Checkout extends Component
     public float $quickInitialStock = 0;
 
     public float $quickMinStock = 5;
+
+    // Additional Conversion Units for Quick Create
+    public array $quickAdditionalUnits = [];
 
     // Inline Create Location Form State
     public bool $showInlineLocationForm = false;
@@ -364,8 +369,9 @@ class Checkout extends Component
     public function getGrandTotalProperty(): float
     {
         $disc = is_numeric($this->discountTotal) ? (float) $this->discountTotal : 0.0;
+        $shipping = is_numeric($this->shippingCost) ? (float) $this->shippingCost : 0.0;
 
-        return max(0, $this->subtotal - $disc);
+        return max(0, $this->subtotal - $disc + $shipping);
     }
 
     public function getChangeAmountProperty(): float
@@ -375,6 +381,71 @@ class Checkout extends Component
         return max(0, $paid - $this->grandTotal);
     }
 
+    public function reprintLastReceipt(): void
+    {
+        $storeId = Auth::user()?->store_id ?? Store::first()?->id ?? 1;
+        $latestSale = Sale::with(['items', 'customer', 'cashier', 'payments'])
+            ->where('store_id', $storeId)
+            ->latest('id')
+            ->first();
+
+        if (! $latestSale) {
+            $this->dispatch('swal', title: 'Belum Ada Transaksi', text: 'Tidak ada transaksi penjualan sebelumnya untuk dicetak ulang.', icon: 'info');
+
+            return;
+        }
+
+        $this->lastSale = $latestSale;
+        $this->showPrintModal = true;
+        $this->dispatch('swal-toast', message: "Membuka nota transaksi {$latestSale->invoice_number}", icon: 'info');
+    }
+
+    public function getWhatsAppUrlProperty(): string
+    {
+        if (! $this->lastSale) {
+            return '#';
+        }
+
+        $phone = $this->lastSale->customer?->phone ?? '';
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        if (str_starts_with($cleanPhone, '0')) {
+            $cleanPhone = '62'.substr($cleanPhone, 1);
+        }
+
+        $dateStr = $this->lastSale->sold_at ? $this->lastSale->sold_at->format('d/m/Y H:i') : now()->format('d/m/Y H:i');
+        $customerName = $this->lastSale->customer?->name ?? 'Pelanggan Umum';
+        $invoice = $this->lastSale->invoice_number;
+        $total = number_format($this->lastSale->grand_total, 0, ',', '.');
+        $status = $this->lastSale->payment_status === 'paid' ? 'LUNAS' : 'BON / PIUTANG';
+
+        $message = "*TOKO DUTA SAE*\n"
+            ."_Faktur & Nota Pembelian Resmi_\n"
+            ."--------------------------------\n"
+            ."No Faktur: *{$invoice}*\n"
+            ."Tanggal: {$dateStr}\n"
+            ."Pelanggan: *{$customerName}*\n"
+            ."Total Belanja: *Rp {$total}*\n"
+            ."Status: *{$status}*\n";
+
+        if ((float) $this->lastSale->shipping_cost > 0) {
+            $ongkir = number_format($this->lastSale->shipping_cost, 0, ',', '.');
+            $message .= "Ongkos Kirim: Rp {$ongkir}\n";
+        }
+
+        if ($this->lastSale->due_date && $this->lastSale->payment_status !== 'paid') {
+            $dueDateStr = $this->lastSale->due_date->format('d/m/Y');
+            $message .= "Jatuh Tempo: *{$dueDateStr}*\n";
+        }
+
+        $message .= "--------------------------------\n"
+            .'Terima kasih telah berbelanja di Toko Duta Sae! 🙏';
+
+        return 'https://api.whatsapp.com/send?'.http_build_query([
+            'phone' => $cleanPhone,
+            'text' => $message,
+        ]);
+    }
+
     // Quick Create Modal Actions
     public function openQuickCreate()
     {
@@ -382,7 +453,23 @@ class Checkout extends Component
         $this->quickName = '';
         $this->quickSellingPrice = 0;
         $this->quickInitialStock = 0;
+        $this->quickAdditionalUnits = [];
         $this->showQuickCreateModal = true;
+    }
+
+    public function addQuickAdditionalUnitRow(): void
+    {
+        $secondUnit = Unit::where('id', '!=', $this->quickBaseUnitId)->first();
+        $this->quickAdditionalUnits[] = [
+            'unit_id' => $secondUnit?->id,
+            'conversion_factor' => 12.0,
+            'selling_price' => 0.0,
+        ];
+    }
+
+    public function removeQuickAdditionalUnitRow(int $index): void
+    {
+        array_splice($this->quickAdditionalUnits, $index, 1);
     }
 
     public function saveQuickCreate(ProductService $productService)
@@ -400,9 +487,11 @@ class Checkout extends Component
                 'base_selling_price' => $this->quickSellingPrice,
                 'initial_stock' => $this->quickInitialStock,
                 'minimum_stock_base' => $this->quickMinStock,
+                'additional_units' => $this->quickAdditionalUnits,
             ], $user->id);
 
             $this->showQuickCreateModal = false;
+            $this->quickAdditionalUnits = [];
             $this->selectProduct($product->id);
             $this->successMessage = "Produk '{$product->name}' berhasil dibuat!";
             $this->dispatch('swal-toast', message: $this->successMessage, icon: 'success');
@@ -568,6 +657,7 @@ class Checkout extends Component
                 'store_id' => $storeId,
                 'customer_id' => $this->selectedCustomerId,
                 'discount_total' => $this->discountTotal,
+                'shipping_cost' => is_numeric($this->shippingCost) ? (float) $this->shippingCost : 0.0,
                 'due_date' => $this->dueDate,
                 'notes' => $this->notes,
                 'items' => $this->cart,
@@ -583,6 +673,7 @@ class Checkout extends Component
             $this->lastSale = $sale->load(['items', 'customer', 'cashier', 'payments']);
             $this->cart = [];
             $this->discountTotal = 0;
+            $this->shippingCost = 0;
             $this->amountPaid = 0;
             $this->selectedCustomerId = null;
             $this->referenceNumber = '';
